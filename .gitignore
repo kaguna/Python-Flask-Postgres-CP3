@@ -1,3 +1,6 @@
 venv
 .idea
 .env
+app/__pycache__
+__init__.pyc
+instance/__pycache__
