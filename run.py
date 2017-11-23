@@ -1,9 +1,8 @@
-import os
+# runs the API
 
 from app import create_app
 
-config_name = "development"
-app = create_app(config_name)
+app = create_app("testing")
 
 if __name__ == '__main__':
     app.run()
