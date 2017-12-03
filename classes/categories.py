@@ -5,8 +5,8 @@ from app.models import Categories
 from flask.views import MethodView
 
 
-class GeneralCategory(MethodView):
-    """This will handle the POST and Get methods for general categories"""
+class NonFilteredCategoryManipulations(MethodView):
+    """This will handle the POST and Get methods with no parameters"""
 
     def post(self):
         category_name = str(request.data.get('category_name', ''))
@@ -35,8 +35,11 @@ class GeneralCategory(MethodView):
         return response
 
 
-class SpecificCategory(MethodView):
-    """This will handle the GET, PUT and DELETE operations for a specific category"""
+class FilteredCategoryManipulations(MethodView):
+    """
+    This will handle the GET, PUT and DELETE operations for a specific
+        category filtered by ID
+    """
     def get(self, category_id):
         category = Categories.query.filter_by(id=category_id).first()
         category_attributes = {
@@ -77,5 +80,5 @@ class SpecificCategory(MethodView):
         return make_response(jsonify({'message': 'Category not authenticated'})), 401
 
 
-specific_category = SpecificCategory.as_view('specific_category')
-general_category = GeneralCategory.as_view('general_category')
+filtered_category = FilteredCategoryManipulations.as_view('filtered_category')
+nonfiltered_category = NonFilteredCategoryManipulations.as_view('nonfiltered_category')

@@ -18,11 +18,11 @@ def create_app(config_name):
     db.init_app(app)
 
     from app.models import Categories
-    from classes.categories import general_category, specific_category
+    from classes.categories import filtered_category, nonfiltered_category
 
     """All the routes are handled here"""
-    app.add_url_rule('/categories/', methods=['GET', 'POST'], view_func=general_category)
+    app.add_url_rule('/categories/', methods=['GET', 'POST'], view_func=nonfiltered_category)
     app.add_url_rule('/categories/<int:category_id>', methods=['GET', 'PUT', 'DELETE'],
-                     view_func=specific_category)
+                     view_func=filtered_category)
 
     return app
