@@ -22,7 +22,7 @@ class CategoriesTestCase(unittest.TestCase):
         """Test API can create a category (POST request)"""
         res = self.client().post('/categories/', data=self.categories)
         self.assertEqual(res.status_code, 201)
-        self.assertIn('Lunch', str(res.data))
+        self.assertIn('Category created successfully', str(res.data))
 
     def tearDown(self):
         """teardown all initialized variables."""
