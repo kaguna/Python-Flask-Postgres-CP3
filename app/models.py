@@ -19,9 +19,11 @@ class Users(db.Model):
     # categories = db.relationship(
     #     'Categories', order_by='categories.id', cascade="all, delete-orphan")
 
-    def __init__(self, email):
+    def __init__(self, email, username, password):
         """initialize with user email."""
         self.email = email
+        self.username = username
+        self.password = password
 
     def save(self):
         db.session.add(self)
