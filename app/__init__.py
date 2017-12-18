@@ -20,10 +20,12 @@ def create_app(config_name):
     from app.models import Categories, Users
     from classes.categories import filtered_category, nonfiltered_category
     from classes.auth.users import user_creation
+    from classes.auth.login import user_login
 
     """All the routes are handled here"""
     # user endpoints
     app.add_url_rule('/auth/user/', methods=['POST'], view_func=user_creation)
+    app.add_url_rule('/auth/login/', methods=['POST'], view_func=user_login)
 
     # category endpoints
     app.add_url_rule('/categories/', methods=['GET', 'POST'], view_func=nonfiltered_category)
