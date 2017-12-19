@@ -47,7 +47,7 @@ class Categories(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     category_name = db.Column(db.String(100), unique=True)
-    users_id = db.Column(db.String(100))
+    users_id = db.Column(db.Integer, db.ForeignKey(Users.id), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(),
                            onupdate=db.func.current_timestamp())
@@ -68,8 +68,8 @@ class Categories(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_all():
-        return Categories.query.all()
+    def get_all(owner_id):
+        return Categories.query.filter_by(users_id=owner_id)
 
     def __repr__(self):
         return "<Categories: {}>".format(self.category_name)
