@@ -3,22 +3,26 @@
 from flask import request, jsonify, make_response
 from app.models import Categories
 from flask.views import MethodView
+from classes.auth.auth import token_required
 
 
 class NonFilteredCategoryManipulations(MethodView):
     """This will handle the POST and Get methods with no parameters"""
 
-    def post(self):
+    decorators = [token_required]
+
+    def post(self, user_in_session):
         category_name = str(request.data.get('category_name', ''))
-        users_id = str(request.data.get('users_id', ''))
+        # users_id = str(request.data.get('users_id', ''))
+        users_id = user_in_session
         if category_name:
             categories = Categories(category_name=category_name, users_id=users_id)
             categories.save()
 
             return make_response(jsonify({'message': 'Category created successfully'})), 201
 
-    def get(self):
-        all_categories = Categories.get_all()
+    def get(self,user_in_session):
+        all_categories = Categories.get_all(user_in_session)
         results = []
 
         for categories in all_categories:
