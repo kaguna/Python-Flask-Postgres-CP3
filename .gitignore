@@ -8,3 +8,5 @@ migrations
 classes/__pycache__/
 tests/__pycache__/
 .coverage
+.Ds_Store
+__pycache__/
