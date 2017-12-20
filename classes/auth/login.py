@@ -28,7 +28,7 @@ class UserLoginAuthentication(MethodView):
                                                   os.getenv('SECRET'))
                         if access_token:
 
-                            valid_response = {'access_token': access_token.decode('UTF-8'),
+                            valid_response = {'access_token': access_token.decode(),
                                               'message': 'Successful login'
                                               }
                             return make_response(jsonify(valid_response)), 200
