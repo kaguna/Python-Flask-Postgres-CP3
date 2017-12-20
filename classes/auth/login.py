@@ -25,7 +25,7 @@ class UserLoginAuthentication(MethodView):
                         access_token = jwt.encode({'id': user.id,
                                                    'expiry_time': str(datetime.datetime.utcnow() +
                                                                       datetime.timedelta(minutes=30))},
-                                                  os.getenv('SECRET'))
+                                                  os.getenv('SECRET', '$#%^%$^%@@@@@56634@@@'))
                         if access_token:
 
                             valid_response = {'access_token': access_token.decode(),

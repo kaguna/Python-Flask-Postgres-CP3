@@ -22,7 +22,7 @@ before_script:
 
 script:
 #Scope of code for the coveralls to cover
-  - pytest tests/
+  - pytest --cov=app tests/
 
 after_success:
 # After Travis builds successfully test the coverage
