@@ -4,7 +4,7 @@ from flask import request, jsonify, make_response
 from app.models import Categories
 from flask.views import MethodView
 from classes.auth.auth import token_required
-
+import re
 
 class NonFilteredCategoryManipulations(MethodView):
     """This will handle the POST and Get methods with no parameters"""
@@ -12,14 +12,19 @@ class NonFilteredCategoryManipulations(MethodView):
     decorators = [token_required]
 
     def post(self, user_in_session):
-        category_name = str(request.data.get('category_name', ''))
-        # users_id = str(request.data.get('users_id', ''))
+        categoryname = str(request.data.get('category_name', '')).strip()
+        regexcategory_name = "[a-zA-Z0-9- .]"
         users_id = user_in_session
-        if category_name:
-            categories = Categories(category_name=category_name, users_id=users_id)
-            categories.save()
-
-            return make_response(jsonify({'message': 'Category created successfully'})), 201
+        category_existence = Categories.query.filter_by(category_name=categoryname).first()
+        if categoryname:
+            if re.search(regexcategory_name, categoryname):
+                if not category_existence:
+                    categories = Categories(category_name=categoryname, users_id=users_id)
+                    categories.save()
+                    return make_response(jsonify({'message': 'Category created successfully'})), 201
+                return make_response(jsonify({'message': 'Category exists!'})), 409
+            return make_response(jsonify({'message': 'Invalid category name given'})), 400
+        return make_response(jsonify({'message': 'Please fill all the fields'})), 422
 
     def get(self,user_in_session):
         all_categories = Categories.get_all(user_in_session)
@@ -59,21 +64,23 @@ class FilteredCategoryManipulations(MethodView):
 
     def put(self, category_id):
         category = Categories.query.filter_by(id=category_id).first()
+
+        categoryname = str(request.data.get('category_name', '')).strip()
+        regexcategory_name = "[a-zA-Z0-9- .]"
+        category_existence = Categories.query.filter_by(category_name=categoryname).first()
         if category:
-            category_name = str(request.data.get('category_name', ''))
-            category.category_name = category_name
-            category.save()
-            category_attributes = {
-                    'id': category.id,
-                    'category_name': category.category_name,
-                    'user_id': category.users_id,
-                    'date_created': category.created_at,
-                    'date_updated': category.updated_at
-                    }
-            response = jsonify(category_attributes)
-            response.status_code = 200
-            return category_attributes
-        return make_response(jsonify({'message': 'Category not authenticated'})), 401
+            if categoryname:
+                if re.search(regexcategory_name, categoryname):
+                    if not category_existence:
+
+                        category.category_name = categoryname
+                        category.save()
+
+                        return make_response(jsonify({'message': 'Category updated successfully'})), 201
+                    return make_response(jsonify({'message': 'Category exists!'})), 409
+                return make_response(jsonify({'message': 'Invalid category name given'})), 400
+            return make_response(jsonify({'message': 'Please fill all the fields'})), 422
+        return make_response(jsonify({'message': 'Category not found'})), 401
 
     def delete(self, category_id):
         category = Categories.query.filter_by(id=category_id).first()
@@ -81,8 +88,9 @@ class FilteredCategoryManipulations(MethodView):
             category.delete()
             return make_response(jsonify({'message': 'Category '
                                                      + category.category_name + ' deleted'})), 200
-        return make_response(jsonify({'message': 'Category not authenticated'})), 401
+        return make_response(jsonify({'message': 'Category not found'})), 401
 
 
 filtered_category = FilteredCategoryManipulations.as_view('filtered_category')
 nonfiltered_category = NonFilteredCategoryManipulations.as_view('nonfiltered_category')
+
