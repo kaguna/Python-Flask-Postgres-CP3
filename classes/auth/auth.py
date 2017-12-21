@@ -14,7 +14,7 @@ def token_required(f):
         if not access_token:
             return jsonify({'messgae': 'Token is missing.'}), 401
         try:
-            data = jwt.decode(access_token, os.getenv('SECRET'))
+            data = jwt.decode(access_token, os.getenv('SECRET', '$#%^%$^%@@@@@56634@@@'))
             user_in_session = data['id']
         except:
             return jsonify({'messgae': 'Token is invalid.'}), 401
