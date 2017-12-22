@@ -86,8 +86,7 @@ class FilteredCategoryManipulations(MethodView):
         category = Categories.query.filter_by(id=category_id).first()
         if category:
             category.delete()
-            return make_response(jsonify({'message': 'Category '
-                                                     + category.category_name + ' deleted'})), 200
+            return make_response(jsonify({'message': 'Category deleted'})), 200
         return make_response(jsonify({'message': 'Category not found'})), 401
 
 
