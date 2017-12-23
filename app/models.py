@@ -16,8 +16,7 @@ class Users(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(),
                            onupdate=db.func.current_timestamp())
-    # categories = db.relationship(
-    #     'Categories', order_by='categories.id', cascade="all, delete-orphan")
+    categories = db.relationship('Categories', order_by='Categories.id', cascade="all, delete-orphan")
 
     def __init__(self, email, username, password):
         """initialize with user email."""
@@ -51,8 +50,7 @@ class Categories(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(),
                            onupdate=db.func.current_timestamp())
-    # recipes = db.relationship(
-    #     'Recipes', order_by='recipes.id', cascade="all, delete-orphan")
+    recipes = db.relationship('Recipes', order_by='Recipes.id', cascade="all, delete-orphan")
 
     def __init__(self, category_name, users_id):
         """initialize with user email."""
@@ -82,15 +80,17 @@ class Recipes(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     recipe_name = db.Column(db.String(100), unique=True)
-    recipe_description = db.Column(db.String(255))
-    # category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
+    recipe_description = db.Column(db.String(1024))
+    category_id = db.Column(db.Integer, db.ForeignKey(Categories.id), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(),
                            onupdate=db.func.current_timestamp())
 
-    def __init__(self, recipe_name):
+    def __init__(self, recipe_name, recipe_description, category_id):
         """initialize with user email."""
         self.recipe_name = recipe_name
+        self.recipe_description = recipe_description
+        self.category_id = category_id
 
     def save(self):
         db.session.add(self)
