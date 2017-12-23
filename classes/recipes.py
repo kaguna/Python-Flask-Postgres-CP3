@@ -8,7 +8,8 @@ import re
 
 
 class NonFilteredRecipesManipulations(MethodView):
-    """This will handle the POST and Get methods with no parameters"""
+    """This will handle the POST and Get methods with no parameters
+    """
 
     decorators = [token_required]
 
@@ -36,7 +37,6 @@ class NonFilteredRecipesManipulations(MethodView):
     def get(self, user_in_session, category_id):
         category_recipes = Recipes.get_all(category_id)
         results = []
-
         for recipes in category_recipes:
             all_recipes = {
                 'id': recipes.id,
@@ -51,5 +51,27 @@ class NonFilteredRecipesManipulations(MethodView):
         response.status_code = 200
         return response
 
+class FilteredRecipesManipulations(MethodView):
+    """This will handle the GET, PUT and DELETE methods with parameters
+    """
+    decorators = [token_required]
+
+    def get(self, user_in_session, category_id, recipe_id):
+        single_recipe = Recipes.query.filter_by(category_id=category_id, id=recipe_id).first()
+        if not recipe_id:
+            one_recipe = {
+                'id': single_recipe.id,
+                'recipe_name': single_recipe.recipe_name,
+                'recipe_description': single_recipe.recipe_description,
+                'category_id': single_recipe.category_id,
+                'date_created': single_recipe.created_at,
+                'date_updated': single_recipe.updated_at
+            }
+            response = jsonify(one_recipe)
+            response.status_code = 200
+            return response
+        return make_response(jsonify({'message': 'Recipe not found'})), 404
+
 
 nonfiltered_recipes = NonFilteredRecipesManipulations.as_view('nonfiltered_recipes')
+filtered_recipes = FilteredRecipesManipulations.as_view('filtered_recipes')
