@@ -101,8 +101,8 @@ class Recipes(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_all():
-        return Recipes.query.all()
+    def get_all(category):
+        return Recipes.query.filter_by(category_id=category)
 
     def __repr__(self):
         return "<Recipes: {}>".format(self.recipe_name)
