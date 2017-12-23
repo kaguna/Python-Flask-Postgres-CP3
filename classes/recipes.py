@@ -96,6 +96,13 @@ class FilteredRecipesManipulations(MethodView):
             return make_response(jsonify({'message': 'Please fill all the fields'})), 422
         return make_response(jsonify({'message': 'Recipe not found'})), 404
 
+    def delete(self, user_in_session, category_id, recipe_id):
+        recipe = Recipes.query.filter_by(id=recipe_id, category_id=category_id).first()
+        if recipe:
+            recipe.delete()
+            return make_response(jsonify({'message': 'Recipe deleted'})), 200
+        return make_response(jsonify({'message': 'recipe not found'})), 401
+
 
 nonfiltered_recipes = NonFilteredRecipesManipulations.as_view('nonfiltered_recipes')
 filtered_recipes = FilteredRecipesManipulations.as_view('filtered_recipes')
