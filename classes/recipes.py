@@ -7,7 +7,7 @@ from classes.auth.auth import token_required
 import re
 
 
-class FilteredRecipesManipulations(MethodView):
+class NonFilteredRecipesManipulations(MethodView):
     """This will handle the POST and Get methods with no parameters"""
 
     decorators = [token_required]
@@ -33,5 +33,23 @@ class FilteredRecipesManipulations(MethodView):
             return make_response(jsonify({'message': 'Please fill all the fields'})), 422
         return make_response(jsonify({'message': 'Category not found'})), 404
 
+    def get(self, user_in_session, category_id):
+        category_recipes = Recipes.get_all(category_id)
+        results = []
 
-filtered_recipes = FilteredRecipesManipulations.as_view('filtered_recipes')
+        for recipes in category_recipes:
+            all_recipes = {
+                'id': recipes.id,
+                'recipe_name': recipes.recipe_name,
+                'recipe_description': recipes.recipe_description,
+                'category_id': recipes.category_id,
+                'date_created': recipes.created_at,
+                'date_updated': recipes.updated_at
+            }
+            results.append(all_recipes)
+        response = jsonify(results)
+        response.status_code = 200
+        return response
+
+
+nonfiltered_recipes = NonFilteredRecipesManipulations.as_view('nonfiltered_recipes')
