@@ -19,7 +19,7 @@ def create_app(config_name):
 
     from app.models import Categories, Users
     from classes.categories import filtered_category, nonfiltered_category
-    from classes.recipes import nonfiltered_recipes
+    from classes.recipes import nonfiltered_recipes, filtered_recipes
     from classes.auth.users import user_creation
     from classes.auth.login import user_login
 
@@ -30,10 +30,11 @@ def create_app(config_name):
 
     # category endpoints
     app.add_url_rule('/categories/', methods=['GET', 'POST'], view_func=nonfiltered_category)
-    app.add_url_rule('/categories/<int:category_id>', methods=['GET', 'PUT', 'DELETE'],
-                     view_func=filtered_category)
+    app.add_url_rule('/categories/<int:category_id>', methods=['GET', 'PUT', 'DELETE'], view_func=filtered_category)
 
     # recipes endpoints
     app.add_url_rule('/categories/<int:category_id>/recipes', methods=['GET', 'POST'], view_func=nonfiltered_recipes)
+    app.add_url_rule('/categories/<int:category_id>/recipes/<int:recipe_id>', methods=['GET'],
+                     view_func=filtered_recipes)
 
     return app
