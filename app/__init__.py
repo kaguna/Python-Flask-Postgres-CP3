@@ -34,7 +34,7 @@ def create_app(config_name):
 
     # recipes endpoints
     app.add_url_rule('/categories/<int:category_id>/recipes', methods=['GET', 'POST'], view_func=nonfiltered_recipes)
-    app.add_url_rule('/categories/<int:category_id>/recipes/<int:recipe_id>', methods=['GET', 'PUT'],
+    app.add_url_rule('/categories/<int:category_id>/recipes/<int:recipe_id>', methods=['GET', 'PUT', 'DELETE'],
                      view_func=filtered_recipes)
 
     return app
