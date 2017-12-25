@@ -101,7 +101,7 @@ class FilteredRecipesManipulations(MethodView):
         if recipe:
             recipe.delete()
             return make_response(jsonify({'message': 'Recipe deleted'})), 200
-        return make_response(jsonify({'message': 'recipe not found'})), 401
+        return make_response(jsonify({'message': 'Recipe not found'})), 404
 
 
 nonfiltered_recipes = NonFilteredRecipesManipulations.as_view('nonfiltered_recipes')
