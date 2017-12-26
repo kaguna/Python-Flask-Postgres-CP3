@@ -6,7 +6,8 @@ from flask.views import MethodView
 
 
 class CreateUser(MethodView):
-    """This class will handle the creation of new users"""
+    """This class will handle the creation of new users
+    """
 
     def post(self):
         # create user using post method
@@ -30,5 +31,34 @@ class CreateUser(MethodView):
         return make_response(jsonify({'message': 'Please fill all the fields'})), 422
 
 
+class ResetPassword(MethodView):
+    """This class will handle the resetting of password
+    """
+    def put(self):
+        # This method will edit the already existing password
+        email_pattern = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+        user_email = str(request.data.get('email', '')).strip()
+        user_password = str(request.data.get('password', ''))
+        retyped_password = str(request.data.get('retyped_password', ''))
+        user_name = str(request.data.get('username', '')).strip()
+        if user_email and user_password and user_name:
+            if re.search(email_pattern, user_email):
+                if len(user_password) >= 7 and len(retyped_password) >= 7:
+                    if user_password == retyped_password:
+                        user = Users.query.filter_by(email=user_email, username=user_name).first()
+                        if user:
+
+                            user.password = user_password
+                            user.save()
+
+                            return make_response(jsonify({'message': 'Password resetting is successful'})), 201
+                        return make_response(jsonify({'message': 'User does not exist!'})), 404
+                    return make_response(jsonify({'message': 'Password mismatch'})), 403
+                return make_response(jsonify({'message': 'The password is too short'})), 412
+            return make_response(jsonify({'message': 'Invalid email given'})), 400
+        return make_response(jsonify({'message': 'Please fill all the fields'})), 422
+
+
 """Link the class and operation to a variable."""
 user_creation = CreateUser.as_view('user_creation')
+reset_password = ResetPassword.as_view('reset_password')
