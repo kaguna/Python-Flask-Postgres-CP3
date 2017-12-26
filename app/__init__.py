@@ -20,13 +20,14 @@ def create_app(config_name):
     from app.models import Categories, Users
     from classes.categories import filtered_category, nonfiltered_category
     from classes.recipes import nonfiltered_recipes, filtered_recipes
-    from classes.auth.users import user_creation
+    from classes.auth.users import user_creation, reset_password
     from classes.auth.login import user_login
 
     """All the routes are handled here"""
     # user endpoints
     app.add_url_rule('/auth/user/', methods=['POST'], view_func=user_creation)
     app.add_url_rule('/auth/login/', methods=['POST'], view_func=user_login)
+    app.add_url_rule('/auth/reset_password/', methods=['PUT'], view_func=reset_password)
 
     # category endpoints
     app.add_url_rule('/categories/', methods=['GET', 'POST'], view_func=nonfiltered_category)
