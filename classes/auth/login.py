@@ -6,12 +6,12 @@ from app.models import Users
 from flask.views import MethodView
 import jwt
 import datetime
+from app.models import BlacklistToken
 
 
 class UserLoginAuthentication(MethodView):
     """This class will handle the access of resources by user through login.
     """
-
     def post(self):
         # User login using post method
         email_pattern = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
@@ -43,5 +43,24 @@ class UserLoginAuthentication(MethodView):
         return make_response(jsonify({'message': 'Please fill all the fields'})), 422
 
 
+class UserLogoutAuthentication(MethodView):
+    """This will enable user to destroy the session of the current user.
+    """
+
+    def post(self):
+        """Method to logout the user"""
+        access_token = request.headers.get('x-access-token')
+        if access_token:
+            check_token = BlacklistToken.query.filter_by(token=access_token).first()
+            if not check_token:
+                save_tokens = BlacklistToken(token=access_token)
+                save_tokens.save()
+
+                return make_response(jsonify({'message': 'User logged out successfully'})), 200
+            return make_response(jsonify({'message': 'The user is already logged out!'})), 409
+        return make_response(jsonify({'message': 'Invalid access token'})), 401
+
+
 """Link the class and operation to a variable."""
 user_login = UserLoginAuthentication.as_view('user_login')
+user_logout = UserLogoutAuthentication.as_view('user_logout')
