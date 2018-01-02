@@ -31,11 +31,11 @@ def create_app(config_name):
     app.add_url_rule('/auth/reset_password', methods=['PUT'], view_func=reset_password)
 
     # category endpoints
-    app.add_url_rule('/categories', methods=['GET', 'POST'], view_func=nonfiltered_category)
+    app.add_url_rule('/categories/', methods=['GET', 'POST'], view_func=nonfiltered_category)
     app.add_url_rule('/category/<int:category_id>', methods=['GET', 'PUT', 'DELETE'], view_func=filtered_category)
 
     # recipes endpoints
-    app.add_url_rule('/category/<int:category_id>/recipes', methods=['GET', 'POST'], view_func=nonfiltered_recipes)
+    app.add_url_rule('/category/<int:category_id>/recipes/', methods=['GET', 'POST'], view_func=nonfiltered_recipes)
     app.add_url_rule('/category/<int:category_id>/recipe/<int:recipe_id>', methods=['GET', 'PUT', 'DELETE'],
                      view_func=filtered_recipes)
 

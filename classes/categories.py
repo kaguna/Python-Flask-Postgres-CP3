@@ -58,7 +58,7 @@ class NonFilteredCategoryManipulations(MethodView):
                 'date_updated': categories.updated_at
             }
             category_list.append(obj)
-            return make_response(jsonify(category_list)), 200
+        return make_response(jsonify(category_list)), 200
 
 
 class FilteredCategoryManipulations(MethodView):
@@ -70,16 +70,18 @@ class FilteredCategoryManipulations(MethodView):
 
     def get(self,user_in_session, category_id):
         category = Categories.query.filter_by(id=category_id).first()
-        category_attributes = {
+        if category:
+            category_attributes = {
                 'id': category.id,
                 'category_name': category.category_name,
                 'user_id': category.users_id,
                 'date_created': category.created_at,
                 'date_updated': category.updated_at
             }
-        response = jsonify(category_attributes)
-        response.status_code = 200
-        return category_attributes
+            response = jsonify(category_attributes)
+            response.status_code = 200
+            return category_attributes
+        return make_response(jsonify({'message': 'Category not found'})), 401
 
     def put(self, user_in_session, category_id):
         category = Categories.query.filter_by(id=category_id).first()
