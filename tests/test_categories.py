@@ -20,8 +20,8 @@ class CategoriesTestCase(unittest.TestCase):
             # create all tables
             db.create_all()
 
-        self.client.post('/auth/user/', data=self.register_user)
-        login_details = self.client.post('/auth/login/', data=login_user)
+        self.client.post('/auth/register', data=self.register_user)
+        login_details = self.client.post('/auth/login', data=login_user)
         self.access_token = json.loads(login_details.data.decode())['access_token']
 
     """Test category creation(POST)
@@ -29,15 +29,15 @@ class CategoriesTestCase(unittest.TestCase):
     def test_category_creation(self):
         """Test API can create a category (POST request)
         """
-        res = self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
+        res = self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.categories)
         self.assertEqual(res.status_code, 201)
         self.assertIn('Category created successfully', str(res.data))
 
     def test_category_existence(self):
         """Test if API can create a category (POST request) that exists
         """
-        self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
-        res = self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
+        self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.categories)
+        res = self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.categories)
         self.assertEqual(res.status_code, 409)
         self.assertIn('Category exists!', str(res.data))
 
@@ -45,7 +45,7 @@ class CategoriesTestCase(unittest.TestCase):
         """Test if API can create a category with an invalid name
         """
         categories = {'category_name': '$%#%^&&'}
-        res = self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=categories)
+        res = self.client.post('/categories', headers={'x-access-token': self.access_token}, data=categories)
         self.assertEqual(res.status_code, 400)
         self.assertIn('Invalid category name given', str(res.data))
 
@@ -53,7 +53,7 @@ class CategoriesTestCase(unittest.TestCase):
         """Test if API can create a category with name not provided
         """
         self.categories = {'category_name': ''}
-        res = self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
+        res = self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.categories)
         self.assertEqual(res.status_code, 422)
         self.assertIn('Please fill all the fields', str(res.data))
 
@@ -62,44 +62,44 @@ class CategoriesTestCase(unittest.TestCase):
     def test_category_update(self):
         """Test API can update a category (PUT request)
         """
-        self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
+        self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.categories)
         new_category_name = {'category_name': 'Breakfast'}
-        res = self.client.put('/categories/1', headers={'x-access-token': self.access_token}, data=new_category_name)
+        res = self.client.put('/category/1', headers={'x-access-token': self.access_token}, data=new_category_name)
         self.assertEqual(res.status_code, 201)
         self.assertIn('Category updated successfully', str(res.data))
 
     def test_category_update_existence(self):
         """Test if API can update a category (PUT request) that exists
         """
-        self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
-        self.client.put('/categories/1', headers={'x-access-token': self.access_token}, data=self.categories)
-        res = self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
+        self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.categories)
+        self.client.put('/category/1', headers={'x-access-token': self.access_token}, data=self.categories)
+        res = self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.categories)
         self.assertEqual(res.status_code, 409)
         self.assertIn('Category exists!', str(res.data))
 
     def test_invalid_update_category_name(self):
         """Test if API can update a category with an invalid name
         """
-        self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
+        self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.categories)
         categories = {'category_name': '$%#%^&&'}
-        res = self.client.put('/categories/1', headers={'x-access-token': self.access_token}, data=categories)
+        res = self.client.put('/category/1', headers={'x-access-token': self.access_token}, data=categories)
         self.assertEqual(res.status_code, 400)
         self.assertIn('Invalid category name given', str(res.data))
 
     def test_update_non_existence_category(self):
         """Test API can update a category which does not exist (UPDATE request)
         """
-        self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
-        res = self.client.delete('/categories/3', headers={'x-access-token': self.access_token}, data=self.categories)
+        self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.categories)
+        res = self.client.delete('/category/3', headers={'x-access-token': self.access_token}, data=self.categories)
         self.assertEqual(res.status_code, 401)
         self.assertIn('Category not found', str(res.data))
 
     def test_empty_update_category_name(self):
         """Test if API can update a category with name not provided
         """
-        self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
+        self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.categories)
         self.categories = {'category_name': ''}
-        res = self.client.put('/categories/1', headers={'x-access-token': self.access_token}, data=self.categories)
+        res = self.client.put('/category/1', headers={'x-access-token': self.access_token}, data=self.categories)
         self.assertEqual(res.status_code, 422)
         self.assertIn('Please fill all the fields', str(res.data))
 
@@ -109,16 +109,16 @@ class CategoriesTestCase(unittest.TestCase):
     def test_category_deletion(self):
         """Test API can delete a category (DELETE request)
         """
-        self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
-        res = self.client.delete('/categories/1', headers={'x-access-token': self.access_token}, data=self.categories)
+        self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.categories)
+        res = self.client.delete('/category/1', headers={'x-access-token': self.access_token}, data=self.categories)
         self.assertEqual(res.status_code, 200)
         self.assertIn('Category deleted', str(res.data))
 
     def test_delete_non_existence_category(self):
         """Test API can delete a category which does not exist (DELETE request)
         """
-        self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
-        res = self.client.delete('/categories/3', headers={'x-access-token': self.access_token}, data=self.categories)
+        self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.categories)
+        res = self.client.delete('/category/3', headers={'x-access-token': self.access_token}, data=self.categories)
         self.assertEqual(res.status_code, 401)
         self.assertIn('Category not found', str(res.data))
 

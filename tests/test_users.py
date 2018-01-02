@@ -19,7 +19,7 @@ class UsersAuthTestCase(unittest.TestCase):
 
     def test_successful_user_registration(self):
         """Test API can create a user (POST request)"""
-        return_values= self.client().post('/auth/user/', data=self.users)
+        return_values= self.client().post('/auth/register', data=self.users)
         self.assertEqual(return_values.status_code, 201)
         self.assertIn('User registered successfully', str(return_values.data))
 
@@ -27,7 +27,7 @@ class UsersAuthTestCase(unittest.TestCase):
         """Test if the API can reject wrong email format provided
         """
         invalid_email = {'email': 'kagunagmail.com', 'username': 'james', 'password': 'james123'}
-        return_values = self.client().post('/auth/user/', data=invalid_email)
+        return_values = self.client().post('/auth/register', data=invalid_email)
         self.assertEqual(return_values.status_code, 400)
         self.assertIn('Invalid email given', str(return_values.data))
 
@@ -35,7 +35,7 @@ class UsersAuthTestCase(unittest.TestCase):
         """Test if the API can reject empty fields
         """
         empty_fields = {'email': '', 'username': '', 'password': ''}
-        return_values = self.client().post('/auth/user/', data=empty_fields)
+        return_values = self.client().post('/auth/register', data=empty_fields)
         self.assertEqual(return_values.status_code, 422)
         self.assertIn('Please fill all the fields', str(return_values.data))
 
@@ -43,18 +43,18 @@ class UsersAuthTestCase(unittest.TestCase):
         """Test if the API can reject a password with less than 7 characters
         """
         password_length = {'email': 'kaguna@gmail.com', 'username': 'james', 'password': 'j123'}
-        return_values = self.client().post('/auth/user/', data=password_length)
+        return_values = self.client().post('/auth/register', data=password_length)
         self.assertEqual(return_values.status_code, 412)
         self.assertIn('The password is too short', str(return_values.data))
 
     def test_user_email_existence(self):
         """Test if the API can reject a user who exists in the database
         """
-        return_values = self.client().post('/auth/user/', data=self.users)
+        return_values = self.client().post('/auth/register', data=self.users)
         self.assertEqual(return_values.status_code, 201)
         self.assertIn('User registered successfully', str(return_values.data))
 
-        return_values = self.client().post('/auth/user/', data=self.users)
+        return_values = self.client().post('/auth/register', data=self.users)
         self.assertEqual(return_values.status_code, 409)
         self.assertIn('User exists!', str(return_values.data))
 

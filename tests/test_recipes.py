@@ -21,17 +21,17 @@ class RecipesTestCase(unittest.TestCase):
             # create all tables
             db.create_all()
 
-        self.client.post('/auth/user/', data=self.register_user)
-        login_details = self.client.post('/auth/login/', data=login_user)
+        self.client.post('/auth/register', data=self.register_user)
+        login_details = self.client.post('/auth/login', data=login_user)
         self.access_token = json.loads(login_details.data.decode())['access_token']
-        self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.category)
+        self.client.post('/categories', headers={'x-access-token': self.access_token}, data=self.category)
 
     """Test recipe creation(POST)
     """
     def test_recipe_creation(self):
         """Test API can create a recipe (POST request)
         """
-        response = self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        response = self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                                     data=self.recipes)
         self.assertEqual(response.status_code, 201)
         self.assertIn('Recipe created successfully', str(response.data))
@@ -40,7 +40,7 @@ class RecipesTestCase(unittest.TestCase):
         """Test if the the recipe registration will be successful when any form field is empty
         """
         recipes = {"recipe_name": "", "recipe_procedure": "Boil the water put flour and mix."}
-        response = self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        response = self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                                     data=recipes)
         self.assertEqual(response.status_code, 422)
         self.assertIn('Please fill all the fields', str(response.data))
@@ -49,7 +49,7 @@ class RecipesTestCase(unittest.TestCase):
         """Test if the the recipe registration will be successful when recipe name is invalid
         """
         recipes = {"recipe_name": "!@#$$%^&*", "recipe_procedure": "Boil the water put flour and mix."}
-        response = self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        response = self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                                     data=recipes)
         self.assertEqual(response.status_code, 400)
         self.assertIn('Invalid recipe name given', str(response.data))
@@ -57,9 +57,9 @@ class RecipesTestCase(unittest.TestCase):
     def test_duplicate_recipe(self):
         """Test if the the recipe registration will be successful when recipe is already registered
         """
-        self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                          data=self.recipes)
-        response = self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        response = self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                                     data=self.recipes)
         self.assertEqual(response.status_code, 409)
         self.assertIn('Recipe exists!', str(response.data))
@@ -67,7 +67,7 @@ class RecipesTestCase(unittest.TestCase):
     def test_with_non_existing_category(self):
         """Test if the the recipe registration will be successful when category does not exist.
         """
-        response = self.client.post('/categories/5/recipes', headers={'x-access-token': self.access_token},
+        response = self.client.post('/category/5/recipes', headers={'x-access-token': self.access_token},
                                     data=self.recipes)
         self.assertEqual(response.status_code, 404)
         self.assertIn('Category not found', str(response.data))
@@ -78,16 +78,16 @@ class RecipesTestCase(unittest.TestCase):
     def test_get_specific_recipe(self):
         """Test retrieving a specific recipe
         """
-        self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                          data=self.recipes)
-        response = self.client.get('/categories/1/recipes/1', headers={'x-access-token': self.access_token},
+        response = self.client.get('/category/1/recipe/1', headers={'x-access-token': self.access_token},
                                    data=self.recipes)
         self.assertEqual(response.status_code, 200)
 
     def test_get_non_existing_recipe(self):
         """Test retrieving a recipe not yet registered
         """
-        response = self.client.get('/categories/1/recipes/1', headers={'x-access-token': self.access_token},
+        response = self.client.get('/category/1/recipe/1', headers={'x-access-token': self.access_token},
                                    data=self.recipes)
         self.assertEqual(response.status_code, 404)
         self.assertIn('Recipe not found', str(response.data))
@@ -98,9 +98,9 @@ class RecipesTestCase(unittest.TestCase):
     def test_recipe_successful_editing(self):
         """Test API can edit an existing recipe
         """
-        self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                          data=self.recipes)
-        response = self.client.put('/categories/1/recipes/1', headers={'x-access-token': self.access_token},
+        response = self.client.put('/category/1/recipe/1', headers={'x-access-token': self.access_token},
                                    data={"recipe_name": "Sembe",
                                          "recipe_procedure": "Boil the water put flour and mix."})
         self.assertEqual(response.status_code, 201)
@@ -109,10 +109,10 @@ class RecipesTestCase(unittest.TestCase):
     def test_editing_with_empty_recipe_field(self):
         """Test if the the recipe editing will be successful when any form field is empty
         """
-        self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                          data=self.recipes)
         recipes = {"recipe_name": "", "recipe_procedure": "Boil the water put flour and mix."}
-        response = self.client.put('/categories/1/recipes/1', headers={'x-access-token': self.access_token},
+        response = self.client.put('/category/1/recipe/1', headers={'x-access-token': self.access_token},
                                    data=recipes)
         self.assertEqual(response.status_code, 422)
         self.assertIn('Please fill all the fields', str(response.data))
@@ -120,10 +120,10 @@ class RecipesTestCase(unittest.TestCase):
     def test_editng_with_invalid_recipe_name(self):
         """Test if the the recipe editing will be successful when recipe name is invalid
         """
-        self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                          data=self.recipes)
         recipes = {"recipe_name": "!@#$$%^&*", "recipe_procedure": "Boil the water put flour and mix."}
-        response = self.client.put('/categories/1/recipes/1', headers={'x-access-token': self.access_token},
+        response = self.client.put('/category/1/recipe/1', headers={'x-access-token': self.access_token},
                                    data=recipes)
         self.assertEqual(response.status_code, 400)
         self.assertIn('Invalid recipe name given', str(response.data))
@@ -131,11 +131,11 @@ class RecipesTestCase(unittest.TestCase):
     def test_editing_with_existing_recipe(self):
         """Test if the the recipe editing will be successful when recipe is already registered
         """
-        self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                          data=self.recipes)
-        self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                          data=self.recipes)
-        response = self.client.put('/categories/1/recipes/1', headers={'x-access-token': self.access_token},
+        response = self.client.put('/category/1/recipe/1', headers={'x-access-token': self.access_token},
                                    data=self.recipes)
         self.assertEqual(response.status_code, 409)
         self.assertIn('Recipe exists!', str(response.data))
@@ -143,9 +143,9 @@ class RecipesTestCase(unittest.TestCase):
     def test_editing_with_non_existing_recipe(self):
         """Test if the the recipe editing will be successful when recipe does not exist.
         """
-        self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                          data=self.recipes)
-        response = self.client.put('/categories/5/recipes/1', headers={'x-access-token': self.access_token},
+        response = self.client.put('/category/5/recipe/1', headers={'x-access-token': self.access_token},
                                    data=self.recipes)
         self.assertEqual(response.status_code, 404)
         self.assertIn('Recipe not found', str(response.data))
@@ -156,9 +156,9 @@ class RecipesTestCase(unittest.TestCase):
     def test_recipe_successful_deletion(self):
         """Test API can delete a recipe
         """
-        self.client.post('/categories/1/recipes', headers={'x-access-token': self.access_token},
+        self.client.post('/category/1/recipes', headers={'x-access-token': self.access_token},
                          data=self.recipes)
-        response = self.client.delete('/categories/1/recipes/1', headers={'x-access-token': self.access_token},
+        response = self.client.delete('/category/1/recipe/1', headers={'x-access-token': self.access_token},
                                       data=self.recipes)
         self.assertEqual(response.status_code, 200)
         self.assertIn('Recipe deleted', str(response.data))
@@ -166,7 +166,7 @@ class RecipesTestCase(unittest.TestCase):
     def test_deleting_non_existing_recipe(self):
         """Test deleting non existing recipe
         """
-        response = self.client.delete('/categories/1/recipes/1', headers={'x-access-token': self.access_token},
+        response = self.client.delete('/category/1/recipe/1', headers={'x-access-token': self.access_token},
                                       data=self.recipes)
         self.assertEqual(response.status_code, 404)
         self.assertIn('Recipe not found', str(response.data))
