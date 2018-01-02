@@ -53,7 +53,7 @@ class Categories(db.Model):
     recipes = db.relationship('Recipes', order_by='Recipes.id', cascade="all, delete-orphan")
 
     def __init__(self, category_name, users_id):
-        """initialize with user email."""
+        """initialize with category name and user id."""
         self.category_name = category_name
         self.users_id = users_id
 
@@ -87,7 +87,7 @@ class Recipes(db.Model):
                            onupdate=db.func.current_timestamp())
 
     def __init__(self, recipe_name, recipe_description, category_id):
-        """initialize with user email."""
+        """initialize with recipe details."""
         self.recipe_name = recipe_name
         self.recipe_description = recipe_description
         self.category_id = category_id
@@ -106,3 +106,23 @@ class Recipes(db.Model):
 
     def __repr__(self):
         return "<Recipes: {}>".format(self.recipe_name)
+
+
+class BlacklistToken(db.Model):
+    """Save tokens after successful logout"""
+
+    __tablename__ = 'blacklisted_tokens'
+
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(1024))
+    date_blacklisted = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def __init__(self, token):
+        self.token = token
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def __repr__(self):
+        return "<Token: {}>".format(self.token)
