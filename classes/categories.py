@@ -6,6 +6,7 @@ from flask.views import MethodView
 from classes.auth.auth import token_required
 import re
 
+
 class NonFilteredCategoryManipulations(MethodView):
     """This will handle the POST and Get methods with no parameters"""
 
@@ -28,7 +29,25 @@ class NonFilteredCategoryManipulations(MethodView):
 
     def get(self,user_in_session):
         all_categories = Categories.get_all(user_in_session)
-        results = []
+        search = request.args.get('q')
+        category_list = []
+
+        if search:
+            searched_categories = Categories.query.filter(Categories.users_id == user_in_session,
+                                                          Categories.category_name.ilike('%' + search + '%'))
+            if searched_categories:
+                for categories in searched_categories:
+                    obj = {
+                            'id': categories.id,
+                            'category_name': categories.category_name,
+                            'user_id': categories.users_id,
+                            'date_created': categories.created_at,
+                            'date_updated': categories.updated_at
+                            }
+                    category_list.append(obj)
+                if len(category_list) <= 0:
+                    return make_response(jsonify({'message': "Category with the character(s) not found"})), 401
+                return make_response(jsonify(category_list)), 200
 
         for categories in all_categories:
             obj = {
@@ -38,10 +57,8 @@ class NonFilteredCategoryManipulations(MethodView):
                 'date_created': categories.created_at,
                 'date_updated': categories.updated_at
             }
-            results.append(obj)
-        response = jsonify(results)
-        response.status_code = 200
-        return response
+            category_list.append(obj)
+            return make_response(jsonify(category_list)), 200
 
 
 class FilteredCategoryManipulations(MethodView):
@@ -49,7 +66,9 @@ class FilteredCategoryManipulations(MethodView):
     This will handle the GET, PUT and DELETE operations for a specific
         category filtered by ID
     """
-    def get(self, category_id):
+    decorators = [token_required]
+
+    def get(self,user_in_session, category_id):
         category = Categories.query.filter_by(id=category_id).first()
         category_attributes = {
                 'id': category.id,
@@ -62,7 +81,7 @@ class FilteredCategoryManipulations(MethodView):
         response.status_code = 200
         return category_attributes
 
-    def put(self, category_id):
+    def put(self, user_in_session, category_id):
         category = Categories.query.filter_by(id=category_id).first()
 
         categoryname = str(request.data.get('category_name', '')).strip()
@@ -82,7 +101,7 @@ class FilteredCategoryManipulations(MethodView):
             return make_response(jsonify({'message': 'Please fill all the fields'})), 422
         return make_response(jsonify({'message': 'Category not found'})), 401
 
-    def delete(self, category_id):
+    def delete(self, user_in_session, category_id):
         category = Categories.query.filter_by(id=category_id).first()
         if category:
             category.delete()
@@ -92,4 +111,3 @@ class FilteredCategoryManipulations(MethodView):
 
 filtered_category = FilteredCategoryManipulations.as_view('filtered_category')
 nonfiltered_category = NonFilteredCategoryManipulations.as_view('nonfiltered_category')
-
