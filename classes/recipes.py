@@ -38,7 +38,26 @@ class NonFilteredRecipesManipulations(MethodView):
     def get(self, user_in_session, category_id):
         # This method will retrieve all the recipes under the category given
         category_recipes = Recipes.get_all(category_id)
-        results = []
+        recipe_list = []
+        search_recipe = request.args.get('q')
+        if search_recipe:
+            search_recipes = Recipes.query.filter(Recipes.category_id == category_id,
+                                                  Recipes.recipe_name.ilike('%' + search_recipe + '%'))
+            for recipes in search_recipes:
+                searched_recipes = {
+                    'id': recipes.id,
+                    'recipe_name': recipes.recipe_name,
+                    'recipe_description': recipes.recipe_description,
+                    'category_id': recipes.category_id,
+                    'date_created': recipes.created_at,
+                    'date_updated': recipes.updated_at
+                    }
+                recipe_list.append(searched_recipes)
+
+            if len(recipe_list) <= 0:
+                return make_response(jsonify({'message': "Recipe with the character(s) not found"})), 401
+            return make_response(jsonify(recipe_list)), 200
+
         for recipes in category_recipes:
             all_recipes = {
                 'id': recipes.id,
@@ -47,11 +66,12 @@ class NonFilteredRecipesManipulations(MethodView):
                 'category_id': recipes.category_id,
                 'date_created': recipes.created_at,
                 'date_updated': recipes.updated_at
-            }
-            results.append(all_recipes)
-        response = jsonify(results)
-        response.status_code = 200
-        return response
+                 }
+            recipe_list.append(all_recipes)
+
+        if len(recipe_list) <= 0:
+            return make_response(jsonify({'message': "No recipes found for this category"})), 401
+        return make_response(jsonify(recipe_list)), 200
 
 
 class FilteredRecipesManipulations(MethodView):
