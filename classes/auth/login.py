@@ -14,6 +14,30 @@ class UserLoginAuthentication(MethodView):
     """
     def post(self):
         # User login using post method
+        """
+        User login
+        ---
+        tags:
+          - Authentication
+        parameters:
+          - in: body
+            name: user details
+            description: User's email and password
+            type: string
+            required: true
+            schema:
+              id: login
+              properties:
+                email:
+                  default: jimmy@gmail.com
+                password:
+                  default: pass1234
+        responses:
+          201:
+            description: Login Successful
+          400:
+            description: Bad request
+        """
         email_pattern = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
         user_email = str(request.data.get('email', '')).strip()
         user_password = str(request.data.get('password', ''))

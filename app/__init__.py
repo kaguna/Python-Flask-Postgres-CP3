@@ -2,7 +2,7 @@
 
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
-
+from flasgger import Swagger
 # local import
 from instance.config import app_config
 
@@ -16,7 +16,18 @@ def create_app(config_name):
     app.config.from_pyfile('config.py')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
-
+    app.config['SWAGGER'] = {"title": "Yummy Recipes API",
+                             "securityDefinitions":
+                                 {
+                                     "APIKeyHeader":
+                                         {
+                                             "type": "apiKey",
+                                             "name": "x-access-token",
+                                             "in": "header"
+                                         },
+                                 },
+                             }
+    Swagger(app)
     from app.models import Categories, Users
     from classes.categories import filtered_category, nonfiltered_category
     from classes.recipes import nonfiltered_recipes, filtered_recipes
