@@ -37,13 +37,24 @@ class NonFilteredRecipesManipulations(MethodView):
 
     def get(self, user_in_session, category_id):
         # This method will retrieve all the recipes under the category given
-        category_recipes = Recipes.get_all(category_id)
+        try:
+            page_number = request.args.get("page", default=1, type=int)
+            no_items_per_page = request.args.get("limit", default=10, type=int)
+        except Exception as e:
+            return make_response(jsonify({"Error": "Invalid page number or limit"})), 400
+
+        if page_number <= 0 or no_items_per_page <= 0:
+            page_number = 1
+            no_items_per_page = 10
+
+        category_recipes = Recipes.get_all(category_id).paginate(page_number, no_items_per_page, error_out=False)
         recipe_list = []
         search_recipe = request.args.get('q')
         if search_recipe:
             search_recipes = Recipes.query.filter(Recipes.category_id == category_id,
-                                                  Recipes.recipe_name.ilike('%' + search_recipe + '%'))
-            for recipes in search_recipes:
+                                                  Recipes.recipe_name.ilike('%' + search_recipe + '%')).\
+                paginate(page_number, no_items_per_page, error_out=False)
+            for recipes in search_recipes.items:
                 searched_recipes = {
                     'id': recipes.id,
                     'recipe_name': recipes.recipe_name,
@@ -58,7 +69,7 @@ class NonFilteredRecipesManipulations(MethodView):
                 return make_response(jsonify({'message': "Recipe with the character(s) not found"})), 401
             return make_response(jsonify(recipe_list)), 200
 
-        for recipes in category_recipes:
+        for recipes in category_recipes.items:
             all_recipes = {
                 'id': recipes.id,
                 'recipe_name': recipes.recipe_name,
