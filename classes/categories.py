@@ -27,16 +27,34 @@ class NonFilteredCategoryManipulations(MethodView):
             return make_response(jsonify({'message': 'Invalid category name given'})), 400
         return make_response(jsonify({'message': 'Please fill all the fields'})), 422
 
-    def get(self,user_in_session):
-        all_categories = Categories.get_all(user_in_session)
+    def get(self, user_in_session):
+        try:
+            page_number = request.args.get("page", default=1, type=int)
+            no_items_per_page = request.args.get("limit", default=10, type=int)
+        except Exception as e:
+            return make_response(jsonify({"Error": "Invalid page number or limit"})), 400
+
+        if page_number <= 0 or no_items_per_page <= 0:
+            page_number = 1
+            no_items_per_page = 10
+
+        number_of_categories = Categories.get_all(user_in_session).count()
+        calculated_pages = int(number_of_categories/no_items_per_page)
+
+        if page_number < calculated_pages:
+            return make_response(jsonify({"Error": "Page not found"})), 404
+
+        all_categories = Categories.get_all(user_in_session).paginate(page_number, no_items_per_page, error_out=False)
         search = request.args.get('q')
         category_list = []
 
         if search:
             searched_categories = Categories.query.filter(Categories.users_id == user_in_session,
-                                                          Categories.category_name.ilike('%' + search + '%'))
+                                                          Categories.category_name.ilike('%' + search + '%')).\
+                paginate(page_number, no_items_per_page, error_out=False)
+
             if searched_categories:
-                for categories in searched_categories:
+                for categories in searched_categories.items:
                     obj = {
                             'id': categories.id,
                             'category_name': categories.category_name,
@@ -49,7 +67,7 @@ class NonFilteredCategoryManipulations(MethodView):
                     return make_response(jsonify({'message': "Category with the character(s) not found"})), 401
                 return make_response(jsonify(category_list)), 200
 
-        for categories in all_categories:
+        for categories in all_categories.items:
             obj = {
                 'id': categories.id,
                 'category_name': categories.category_name,
