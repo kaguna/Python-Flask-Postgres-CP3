@@ -8,11 +8,38 @@ import re
 
 
 class NonFilteredCategoryManipulations(MethodView):
-    """This will handle the POST and Get methods with no parameters"""
+    """This will handle the POST and Get methods with no parameters
+    """
 
     decorators = [token_required]
 
     def post(self, user_in_session):
+        """
+       Create category
+       ---
+       tags:
+         - Categories Endpoints
+       parameters:
+         - in: body
+           name: Category details
+           description: Create category by providing category name
+           type: string
+           required: true
+           schema:
+             id: create_categories
+             properties:
+               category_name:
+                 default: Lunch
+       responses:
+         201:
+           description: Category created successfully
+         409:
+           description: Category exists!
+         400:
+           description: Invalid category name given
+         422:
+           description: Please fill all the fields
+        """
         categoryname = str(request.data.get('category_name', '')).strip()
         regexcategory_name = "[a-zA-Z0-9- .]"
         users_id = user_in_session
@@ -28,11 +55,44 @@ class NonFilteredCategoryManipulations(MethodView):
         return make_response(jsonify({'message': 'Please fill all the fields'})), 422
 
     def get(self, user_in_session):
+        """
+           Retrieve categories
+           ---
+           tags:
+             - Categories Endpoints
+           parameters:
+             - in: query
+               name: q
+               description: Search parameter
+               type: string
+
+             - in: query
+               name: page
+               description: page number
+               type: integer
+               default: 1
+
+             - in: query
+               name: limit
+               description: Limit
+               type: integer
+               default: 10
+
+           responses:
+             201:
+               description: Category created successfully
+             409:
+               description: Category exists!
+             400:
+               description: Invalid category name given
+             422:
+               description: Please fill all the fields
+        """
         try:
-            page_number = request.args.get("page", default=1, type=int)
-            no_items_per_page = request.args.get("limit", default=10, type=int)
+            page_number = int(request.args.get("page", default=1))
+            no_items_per_page = int(request.args.get("limit", default=10))
         except Exception as e:
-            return make_response(jsonify({"Error": "Invalid page number or limit"})), 400
+            return make_response(jsonify({"Error": "Not a valid page numbner or limit"})), 400
 
         if page_number <= 0 or no_items_per_page <= 0:
             page_number = 1
@@ -80,13 +140,26 @@ class NonFilteredCategoryManipulations(MethodView):
 
 
 class FilteredCategoryManipulations(MethodView):
-    """
-    This will handle the GET, PUT and DELETE operations for a specific
+    """This will handle the GET, PUT and DELETE operations for a specific
         category filtered by ID
     """
     decorators = [token_required]
 
-    def get(self,user_in_session, category_id):
+    def get(self, user_in_session, category_id):
+        """
+       Retrieve single category
+       ---
+       tags:
+         - Categories Endpoints
+       parameters:
+         - in: path
+           name: category_id
+           description: category_id
+           type: integer
+       responses:
+         401:
+           description: Category not found
+        """
         category = Categories.query.filter_by(id=category_id).first()
         if category:
             category_attributes = {
@@ -102,6 +175,32 @@ class FilteredCategoryManipulations(MethodView):
         return make_response(jsonify({'message': 'Category not found'})), 401
 
     def put(self, user_in_session, category_id):
+        """
+       Edit single category
+       ---
+       tags:
+         - Categories Endpoints
+       parameters:
+         - in: path
+           name: Category_id
+           description: Category id
+           type: integer
+         - in: body
+           name: category_name
+           description: Category name
+           type: string
+       responses:
+             201:
+               description: Category updated successfully
+             409:
+               description: Category exists!
+             400:
+               description: Invalid category name given
+             401:
+               description: Category not found
+             422:
+               description: Please fill all the fields
+        """
         category = Categories.query.filter_by(id=category_id).first()
 
         categoryname = str(request.data.get('category_name', '')).strip()
@@ -122,6 +221,22 @@ class FilteredCategoryManipulations(MethodView):
         return make_response(jsonify({'message': 'Category not found'})), 401
 
     def delete(self, user_in_session, category_id):
+        """
+       Delete a category
+       ---
+       tags:
+         - Categories Endpoints
+       parameters:
+         - in: path
+           name: category_id
+           description: category_id
+           type: integer
+       responses:
+         200:
+           description: Category deleted
+         401:
+           description: Category not found
+        """
         category = Categories.query.filter_by(id=category_id).first()
         if category:
             category.delete()
