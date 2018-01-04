@@ -15,6 +15,40 @@ class NonFilteredRecipesManipulations(MethodView):
 
     def post(self, user_in_session, category_id):
         # This method will create and save a recipe
+        """
+       Create Recipe
+       ---
+       tags:
+         - Recipes Endpoints
+       parameters:
+         - in: path
+           name: category_id
+           description: category_id
+           type: integer
+         - in: body
+           name: Recipes details
+           description: Create recipe by providing recipe name and description
+           type: string
+           required: true
+           schema:
+             id: create_recipes
+             properties:
+               recipe_name:
+                 default: Ugali
+               recipe_procedure:
+                 default: Boil water; Put flour; mix the water and flour for five min; serve ugali.
+       responses:
+         201:
+           description: Recipe created successfully
+         409:
+           description: Recipe exists!
+         400:
+           description: Invalid recipe name given
+         404:
+           description: Category not found
+         422:
+           description: Please fill all the fields
+        """
         recipename = str(request.data.get('recipe_name', '')).strip()
         recipeprocedure = str(request.data.get('recipe_procedure', '')).strip()
         regexrecipe_name = "[a-zA-Z0-9- .]"
@@ -37,6 +71,46 @@ class NonFilteredRecipesManipulations(MethodView):
 
     def get(self, user_in_session, category_id):
         # This method will retrieve all the recipes under the category given
+
+        """
+           Retrieve recipes
+           ---
+           tags:
+             - Recipes Endpoints
+           parameters:
+             - in: path
+               name: category_id
+               description: category id
+               type: integer
+               required: true
+
+             - in: query
+               name: q
+               description: Search parameter
+               type: string
+
+             - in: query
+               name: page
+               description: page number
+               type: integer
+               default: 1
+
+             - in: query
+               name: limit
+               description: Limit
+               type: integer
+               default: 10
+
+           responses:
+             201:
+               description: Category created successfully
+             400:
+               description: Invalid page number or limit
+             401:
+               description: Recipe not found
+             422:
+               description: Please fill all the fields
+                """
         try:
             page_number = request.args.get("page", default=1, type=int)
             no_items_per_page = request.args.get("limit", default=10, type=int)
@@ -92,23 +166,89 @@ class FilteredRecipesManipulations(MethodView):
 
     def get(self, user_in_session, category_id, recipe_id):
         # Retrieve a specific recipe from cetegory given
+
+        """
+        Retrieve single recipe
+       ---
+       tags:
+         - Recipes Endpoints
+       parameters:
+         - in: path
+           name: category_id
+           description: category_id
+           type: integer
+           required: true
+
+         - in: path
+           name: recipe_id
+           description: Recipe id
+           type: integer
+           required: true
+       responses:
+         404:
+           description: Recipe/category not found
+        """
+        category = Categories.query.filter_by(id=category_id).first()
         single_recipe = Recipes.query.filter_by(category_id=category_id, id=recipe_id).first()
-        if single_recipe:
-            one_recipe = {
-                'id': single_recipe.id,
-                'recipe_name': single_recipe.recipe_name,
-                'recipe_description': single_recipe.recipe_description,
-                'category_id': single_recipe.category_id,
-                'date_created': single_recipe.created_at,
-                'date_updated': single_recipe.updated_at
-            }
-            response = jsonify(one_recipe)
-            response.status_code = 200
-            return response
-        return make_response(jsonify({'message': 'Recipe not found'})), 404
+        if category:
+            if single_recipe:
+                one_recipe = {
+                    'id': single_recipe.id,
+                    'recipe_name': single_recipe.recipe_name,
+                    'recipe_description': single_recipe.recipe_description,
+                    'category_id': single_recipe.category_id,
+                    'date_created': single_recipe.created_at,
+                    'date_updated': single_recipe.updated_at
+                }
+                response = jsonify(one_recipe)
+                response.status_code = 200
+                return response
+            return make_response(jsonify({'message': 'Recipe not found'})), 404
+        return make_response(jsonify({'message': 'Category not found'})), 404
 
     def put(self, user_in_session, category_id, recipe_id):
         # Edit the recipe name from a given category
+
+        """
+        Edit single recipe
+       ---
+       tags:
+         - Recipes Endpoints
+       parameters:
+         - in: path
+           name: Category_id
+           description: Category id
+           type: integer
+           required: true
+
+         - in: path
+           name: recipe_id
+           description: Recipe id
+           type: integer
+           required: true
+
+         - in: body
+           name: recipe_name
+           description: Recipe name
+           type: string
+           required: true
+           schema:
+             id: update_recipes
+             properties:
+               recipe_name:
+                 default: Sembe
+       responses:
+             201:
+               description: Recipe updated successfully
+             409:
+               description: Recipe exists!
+             400:
+               description: Invalid recipe name given
+             401:
+               description: Recipe/Category not found
+             422:
+               description: Please fill all the fields
+        """
         recipename = str(request.data.get('recipe_name', '')).strip()
         regexrecipe_name = "[a-zA-Z0-9- .]"
         recipe = Recipes.query.filter_by(id=recipe_id, category_id=category_id).first()
@@ -128,6 +268,29 @@ class FilteredRecipesManipulations(MethodView):
         return make_response(jsonify({'message': 'Recipe not found'})), 404
 
     def delete(self, user_in_session, category_id, recipe_id):
+        """
+          Delete a Recipe
+          ---
+          tags:
+            - Recipes Endpoints
+          parameters:
+            - in: path
+              name: category_id
+              description: category_id
+              type: integer
+              required: true
+
+            - in: path
+              name: recipe_id
+              description: Recipe id
+              type: integer
+              required: true
+          responses:
+            200:
+              description: Recipe deleted
+            401:
+              description: Recipe not found
+        """
         recipe = Recipes.query.filter_by(id=recipe_id, category_id=category_id).first()
         if recipe:
             recipe.delete()
