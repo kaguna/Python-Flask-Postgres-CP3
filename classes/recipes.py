@@ -1,7 +1,7 @@
 # recipes API CRUD operations
 
 from flask import request, jsonify, make_response
-from app.models import Categories, Recipes
+from app.models import Users, Categories, Recipes
 from flask.views import MethodView
 from classes.auth.auth import token_required
 import re
@@ -52,12 +52,12 @@ class NonFilteredRecipesManipulations(MethodView):
         recipename = str(request.data.get('recipe_name', '')).strip()
         recipeprocedure = str(request.data.get('recipe_procedure', '')).strip()
         regexrecipe_name = "[a-zA-Z0-9- .]"
-        category = Categories.query.filter_by(id=category_id).first()
-        recipe = Recipes.query.filter_by(recipe_name=recipename).first()
-        if category:
+        check_recipe_existence = Recipes.query.filter_by(category_id=category_id, recipe_name=recipename).first()
+        try:
+
             if recipename and recipeprocedure:
                 if re.search(regexrecipe_name, recipename):
-                    if not recipe:
+                    if not check_recipe_existence:
 
                         recipes_save = Recipes(recipe_name=recipename, recipe_description=recipeprocedure,
                                                category_id=category_id)
@@ -67,7 +67,8 @@ class NonFilteredRecipesManipulations(MethodView):
                     return make_response(jsonify({'message': 'Recipe exists!'})), 409
                 return make_response(jsonify({'message': 'Invalid recipe name given'})), 400
             return make_response(jsonify({'message': 'Please fill all the fields'})), 422
-        return make_response(jsonify({'message': 'Category not found'})), 404
+        except Exception:
+            return make_response(jsonify({'message': 'Category not found'})), 404
 
     def get(self, user_in_session, category_id):
         # This method will retrieve all the recipes under the category given

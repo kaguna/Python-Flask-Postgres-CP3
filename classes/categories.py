@@ -43,10 +43,10 @@ class NonFilteredCategoryManipulations(MethodView):
         categoryname = str(request.data.get('category_name', '')).strip()
         regexcategory_name = "[a-zA-Z0-9- .]"
         users_id = user_in_session
-        category_existence = Categories.query.filter_by(category_name=categoryname).first()
+        category_exist = Categories.query.filter_by(users_id=user_in_session, category_name=categoryname).first()
         if categoryname:
             if re.search(regexcategory_name, categoryname):
-                if not category_existence:
+                if not category_exist:
                     categories = Categories(category_name=categoryname, users_id=users_id)
                     categories.save()
                     return make_response(jsonify({'message': 'Category created successfully'})), 201
