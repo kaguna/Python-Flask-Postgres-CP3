@@ -52,15 +52,14 @@ class NonFilteredRecipesManipulations(MethodView):
         recipename = str(request.data.get('recipe_name', '')).strip()
         recipeprocedure = str(request.data.get('recipe_procedure', '')).strip()
         regexrecipe_name = "[a-zA-Z0-9- .]"
-        check_recipe_existence = Recipes.query.filter_by(category_id=category_id, recipe_name=recipename).first()
+        check_recipe_existence = Recipes.query.filter_by(users_id=user_in_session, category_id=category_id, recipe_name=recipename).first()
         try:
-
             if recipename and recipeprocedure:
                 if re.search(regexrecipe_name, recipename):
                     if not check_recipe_existence:
 
                         recipes_save = Recipes(recipe_name=recipename, recipe_description=recipeprocedure,
-                                               category_id=category_id)
+                                               category_id=category_id, users_id=user_in_session)
                         recipes_save.save()
 
                         return make_response(jsonify({'message': 'Recipe created successfully'})), 201
@@ -189,23 +188,20 @@ class FilteredRecipesManipulations(MethodView):
          404:
            description: Recipe/category not found
         """
-        category = Categories.query.filter_by(id=category_id).first()
-        single_recipe = Recipes.query.filter_by(category_id=category_id, id=recipe_id).first()
-        if category:
-            if single_recipe:
-                one_recipe = {
-                    'id': single_recipe.id,
-                    'recipe_name': single_recipe.recipe_name,
-                    'recipe_description': single_recipe.recipe_description,
-                    'category_id': single_recipe.category_id,
-                    'date_created': single_recipe.created_at,
-                    'date_updated': single_recipe.updated_at
-                }
-                response = jsonify(one_recipe)
-                response.status_code = 200
-                return response
-            return make_response(jsonify({'message': 'Recipe not found'})), 404
-        return make_response(jsonify({'message': 'Category not found'})), 404
+        single_recipe = Recipes.query.filter_by(users_id=user_in_session, category_id=category_id, id=recipe_id).first()
+        if single_recipe:
+            one_recipe = {
+                'id': single_recipe.id,
+                'recipe_name': single_recipe.recipe_name,
+                'recipe_description': single_recipe.recipe_description,
+                'category_id': single_recipe.category_id,
+                'date_created': single_recipe.created_at,
+                'date_updated': single_recipe.updated_at
+            }
+            response = jsonify(one_recipe)
+            response.status_code = 200
+            return response
+        return make_response(jsonify({'message': 'Recipe not found'})), 404
 
     def put(self, user_in_session, category_id, recipe_id):
         # Edit the recipe name from a given category
@@ -252,12 +248,12 @@ class FilteredRecipesManipulations(MethodView):
         """
         recipename = str(request.data.get('recipe_name', '')).strip()
         regexrecipe_name = "[a-zA-Z0-9- .]"
-        recipe = Recipes.query.filter_by(id=recipe_id, category_id=category_id).first()
-        recipe_existence = Recipes.query.filter_by(recipe_name=recipename).first()
+        recipe = Recipes.query.filter_by(users_id=user_in_session, id=recipe_id, category_id=category_id).first()
         if recipe:
             if recipename:
                 if re.search(regexrecipe_name, recipename):
-                    if not recipe_existence:
+                    unique_recipe = Recipes.recipe_name_unique(recipe_name=recipename, category_id=category_id)
+                    if not unique_recipe:
 
                         recipe.recipe_name = recipename
                         recipe.save()
@@ -292,7 +288,7 @@ class FilteredRecipesManipulations(MethodView):
             401:
               description: Recipe not found
         """
-        recipe = Recipes.query.filter_by(id=recipe_id, category_id=category_id).first()
+        recipe = Recipes.query.filter_by(users_id=user_in_session, id=recipe_id, category_id=category_id).first()
         if recipe:
             recipe.delete()
             return make_response(jsonify({'message': 'Recipe deleted'})), 200

@@ -98,12 +98,6 @@ class NonFilteredCategoryManipulations(MethodView):
             page_number = 1
             no_items_per_page = 10
 
-        number_of_categories = Categories.get_all(user_in_session).count()
-        calculated_pages = int(number_of_categories/no_items_per_page)
-
-        if page_number < calculated_pages:
-            return make_response(jsonify({"Error": "Page not found"})), 404
-
         all_categories = Categories.get_all(user_in_session).paginate(page_number, no_items_per_page, error_out=False)
         search = request.args.get('q')
         category_list = []
@@ -160,7 +154,7 @@ class FilteredCategoryManipulations(MethodView):
          401:
            description: Category not found
         """
-        category = Categories.query.filter_by(id=category_id).first()
+        category = Categories.query.filter_by(users_id=user_in_session, id=category_id).first()
         if category:
             category_attributes = {
                 'id': category.id,
@@ -201,18 +195,18 @@ class FilteredCategoryManipulations(MethodView):
              422:
                description: Please fill all the fields
         """
-        category = Categories.query.filter_by(id=category_id).first()
 
         categoryname = str(request.data.get('category_name', '')).strip()
         regexcategory_name = "[a-zA-Z0-9- .]"
-        category_existence = Categories.query.filter_by(category_name=categoryname).first()
-        if category:
+        get_the_category = Categories.query.filter_by(users_id=user_in_session, id=category_id).first()
+        if get_the_category:
             if categoryname:
                 if re.search(regexcategory_name, categoryname):
-                    if not category_existence:
+                    unique_category = Categories.name_unique(category_name=categoryname, owner_id=user_in_session)
+                    if not unique_category:
 
-                        category.category_name = categoryname
-                        category.save()
+                        get_the_category.category_name = categoryname
+                        get_the_category.save()
 
                         return make_response(jsonify({'message': 'Category updated successfully'})), 201
                     return make_response(jsonify({'message': 'Category exists!'})), 409
@@ -237,7 +231,7 @@ class FilteredCategoryManipulations(MethodView):
          401:
            description: Category not found
         """
-        category = Categories.query.filter_by(id=category_id).first()
+        category = Categories.query.filter_by(users_id=user_in_session, id=category_id).first()
         if category:
             category.delete()
             return make_response(jsonify({'message': 'Category deleted'})), 200
