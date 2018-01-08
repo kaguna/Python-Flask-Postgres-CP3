@@ -61,6 +61,11 @@ class Categories(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    @staticmethod
+    def name_unique(owner_id, category_name):
+        check_category_existence = Categories.query.filter_by(category_name=category_name, users_id=owner_id).first()
+        return check_category_existence
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
@@ -82,15 +87,17 @@ class Recipes(db.Model):
     recipe_name = db.Column(db.String(100))
     recipe_description = db.Column(db.String(1024))
     category_id = db.Column(db.Integer, db.ForeignKey(Categories.id), nullable=False)
+    users_id = db.Column(db.Integer, db.ForeignKey(Users.id), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(),
                            onupdate=db.func.current_timestamp())
 
-    def __init__(self, recipe_name, recipe_description, category_id):
+    def __init__(self, recipe_name, recipe_description, category_id, users_id):
         """initialize with recipe details."""
         self.recipe_name = recipe_name
         self.recipe_description = recipe_description
         self.category_id = category_id
+        self.users_id = users_id
 
     def save(self):
         db.session.add(self)
@@ -99,6 +106,11 @@ class Recipes(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+    @staticmethod
+    def recipe_name_unique(recipe_name, category_id):
+        recipe_existence = Recipes.query.filter_by(recipe_name=recipe_name, category_id=category_id).first()
+        return recipe_existence
 
     @staticmethod
     def get_all(category):
