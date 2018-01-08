@@ -7,6 +7,7 @@ from flask.views import MethodView
 import jwt
 import datetime
 from app.models import BlacklistToken
+from classes.auth.auth import token_required
 
 
 class UserLoginAuthentication(MethodView):
@@ -33,10 +34,18 @@ class UserLoginAuthentication(MethodView):
                 password:
                   default: pass1234
         responses:
-          201:
+          200:
             description: Login Successful
           400:
-            description: Bad request
+            description: Invalid email
+          401:
+            description: Invalid access token
+          404:
+            description: User not registered!
+          412:
+            description: The password is too short
+          422:
+            description: Please fill all the fields
         """
         email_pattern = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
         user_email = str(request.data.get('email', '')).strip()
@@ -61,7 +70,7 @@ class UserLoginAuthentication(MethodView):
                                             }
                         return make_response(jsonify(invalid_response)), 401
 
-                    return make_response(jsonify({'message': 'Invalid email or password!'})), 404
+                    return make_response(jsonify({'message': 'User not registered!'})), 404
                 return make_response(jsonify({'message': 'The password is too short'})), 412
             return make_response(jsonify({'message': 'Invalid email given'})), 400
         return make_response(jsonify({'message': 'Please fill all the fields'})), 422
@@ -70,18 +79,30 @@ class UserLoginAuthentication(MethodView):
 class UserLogoutAuthentication(MethodView):
     """This will enable user to destroy the session of the current user.
     """
+    decorators = [token_required]
 
-    def post(self):
-        """Method to logout the user"""
+    def post(self, user_in_session):
+        """Method to logout the user
+
+         User logout
+        ---
+        tags:
+          - Authentication
+        responses:
+          200:
+            description: User logged out successfully
+          401:
+            description: Invalid access token
+          409:
+            description: The user is already logged out!
+        """
         access_token = request.headers.get('x-access-token')
         if access_token:
-            check_token = BlacklistToken.query.filter_by(token=access_token).first()
-            if not check_token:
-                save_tokens = BlacklistToken(token=access_token)
-                save_tokens.save()
+            
+            save_tokens = BlacklistToken(token=access_token)
+            save_tokens.save()
 
-                return make_response(jsonify({'message': 'User logged out successfully'})), 200
-            return make_response(jsonify({'message': 'The user is already logged out!'})), 409
+            return make_response(jsonify({'message': 'User '+str(user_in_session)+' logged out successfully'})), 200
         return make_response(jsonify({'message': 'Invalid access token'})), 401
 
 
