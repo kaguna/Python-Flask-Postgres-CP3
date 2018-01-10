@@ -51,11 +51,13 @@ class NonFilteredRecipesManipulations(MethodView):
         """
         recipename = str(request.data.get('recipe_name', '')).strip()
         recipeprocedure = str(request.data.get('recipe_procedure', '')).strip()
-        regexrecipe_name = "[a-zA-Z0-9- .]"
-        check_recipe_existence = Recipes.query.filter_by(users_id=user_in_session, category_id=category_id, recipe_name=recipename).first()
+        regexrecipe_name = "^[a-zA-Z0-9-+\s]{4,20}$"
+        regexrecipe_procedure = "^[a-zA-Z0-9-+\s]{4,100}$"
+        check_recipe_existence = Recipes.query.filter_by(users_id=user_in_session, category_id=category_id,
+                                                         recipe_name=recipename).first()
         try:
             if recipename and recipeprocedure:
-                if re.search(regexrecipe_name, recipename):
+                if re.search(regexrecipe_name, recipename) or re.search(regexrecipe_procedure, recipeprocedure):
                     if not check_recipe_existence:
 
                         recipes_save = Recipes(recipe_name=recipename, recipe_description=recipeprocedure,
@@ -64,7 +66,7 @@ class NonFilteredRecipesManipulations(MethodView):
 
                         return make_response(jsonify({'message': 'Recipe created successfully'})), 201
                     return make_response(jsonify({'message': 'Recipe exists!'})), 409
-                return make_response(jsonify({'message': 'Invalid recipe name given'})), 400
+                return make_response(jsonify({'message': 'Invalid recipe name or procedure given'})), 400
             return make_response(jsonify({'message': 'Please fill all the fields'})), 422
         except Exception:
             return make_response(jsonify({'message': 'Category not found'})), 404
@@ -247,7 +249,7 @@ class FilteredRecipesManipulations(MethodView):
                description: Please fill all the fields
         """
         recipename = str(request.data.get('recipe_name', '')).strip()
-        regexrecipe_name = "[a-zA-Z0-9- .]"
+        regexrecipe_name = "^[a-zA-Z0-9-+\s]{4,20}$"
         recipe = Recipes.query.filter_by(users_id=user_in_session, id=recipe_id, category_id=category_id).first()
         if recipe:
             if recipename:

@@ -41,7 +41,7 @@ class NonFilteredCategoryManipulations(MethodView):
            description: Please fill all the fields
         """
         categoryname = str(request.data.get('category_name', '')).strip()
-        regexcategory_name = "[a-zA-Z0-9- .]"
+        regexcategory_name = "^[a-zA-Z0-9-+\s]{4,20}$"
         users_id = user_in_session
         category_exist = Categories.query.filter_by(users_id=user_in_session, category_name=categoryname).first()
         if categoryname:
@@ -197,7 +197,7 @@ class FilteredCategoryManipulations(MethodView):
         """
 
         categoryname = str(request.data.get('category_name', '')).strip()
-        regexcategory_name = "[a-zA-Z0-9- .]"
+        regexcategory_name = "^[a-zA-Z0-9-+\s]{4,20}$"
         get_the_category = Categories.query.filter_by(users_id=user_in_session, id=category_id).first()
         if get_the_category:
             if categoryname:

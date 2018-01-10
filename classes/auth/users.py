@@ -1,4 +1,4 @@
-# This file will create the user.
+# This file will create the user and reset the password.
 import re
 from flask import request, jsonify, make_response
 from app.models import Users
@@ -44,12 +44,13 @@ class CreateUser(MethodView):
             description: Please fill all the fields
         """
         email_pattern = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+        regex_username = "^[a-zA-Z0-9-+\s]{4,20}$"
         user_email = str(request.data.get('email', '')).strip()
         user = Users.query.filter_by(email=user_email).first()
         user_name = str(request.data.get('username', '')).strip()
         user_password = str(request.data.get('password', ''))
         if user_email and user_name and user_password:
-            if re.search(email_pattern, user_email):
+            if re.search(email_pattern, user_email) or re.search(regex_username, user_name):
                 if len(user_password) >= 7:
                     if not user:
 
@@ -59,7 +60,7 @@ class CreateUser(MethodView):
                         return make_response(jsonify({'message': 'User registered successfully'})), 201
                     return make_response(jsonify({'message': 'User exists!'})), 409
                 return make_response(jsonify({'message': 'The password is too short'})), 412
-            return make_response(jsonify({'message': 'Invalid email given'})), 400
+            return make_response(jsonify({'message': 'Invalid email or username given'})), 400
         return make_response(jsonify({'message': 'Please fill all the fields'})), 422
 
 
