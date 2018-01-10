@@ -52,7 +52,7 @@ class RecipesTestCase(unittest.TestCase):
         response = self.client.post('/category/1/recipes/', headers={'x-access-token': self.access_token},
                                     data=recipes)
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Invalid recipe name given', str(response.data))
+        self.assertIn('Invalid recipe name or procedure given', str(response.data))
 
     def test_duplicate_recipe(self):
         """Test if the the recipe registration will be successful when recipe is already registered

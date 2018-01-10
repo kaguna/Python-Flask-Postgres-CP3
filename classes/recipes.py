@@ -113,15 +113,9 @@ class NonFilteredRecipesManipulations(MethodView):
              422:
                description: Please fill all the fields
                 """
-        try:
-            page_number = request.args.get("page", default=1, type=int)
-            no_items_per_page = request.args.get("limit", default=10, type=int)
-        except Exception as e:
-            return make_response(jsonify({"Error": "Invalid page number or limit"})), 400
 
-        if page_number <= 0 or no_items_per_page <= 0:
-            page_number = 1
-            no_items_per_page = 10
+        page_number = request.args.get("page", default=1, type=int)
+        no_items_per_page = request.args.get("limit", default=10, type=int)
 
         category_recipes = Recipes.get_all(category_id).paginate(page_number, no_items_per_page, error_out=False)
         recipe_list = []

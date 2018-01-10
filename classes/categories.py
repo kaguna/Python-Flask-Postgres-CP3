@@ -88,15 +88,8 @@ class NonFilteredCategoryManipulations(MethodView):
              422:
                description: Please fill all the fields
         """
-        try:
-            page_number = int(request.args.get("page", default=1))
-            no_items_per_page = int(request.args.get("limit", default=10))
-        except Exception as e:
-            return make_response(jsonify({"Error": "Not a valid page numbner or limit"})), 400
-
-        if page_number <= 0 or no_items_per_page <= 0:
-            page_number = 1
-            no_items_per_page = 10
+        page_number = int(request.args.get("page", default=1))
+        no_items_per_page = int(request.args.get("limit", default=10))
 
         all_categories = Categories.get_all(user_in_session).paginate(page_number, no_items_per_page, error_out=False)
         search = request.args.get('q')

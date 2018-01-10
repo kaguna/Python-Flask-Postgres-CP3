@@ -122,6 +122,15 @@ class CategoriesTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertIn('Category not found', str(res.data))
 
+    """Test category get
+    """
+    def test_get_category_with_invalid_page(self):
+        """Test API can delete a category which does not exist (DELETE request)
+        """
+        self.client.post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
+        res = self.client.get('/category/?page=105', headers={'x-access-token': self.access_token}, data=self.categories)
+        self.assertEqual(res.status_code, 404)
+
     def tearDown(self):
         """teardown all initialized variables."""
         with self.app.app_context():
