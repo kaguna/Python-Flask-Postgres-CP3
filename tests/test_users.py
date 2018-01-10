@@ -17,19 +17,20 @@ class UsersAuthTestCase(unittest.TestCase):
             # create all tables
             db.create_all()
 
+    """ User creation"""
     def test_successful_user_registration(self):
         """Test API can create a user (POST request)"""
-        return_values= self.client().post('/auth/register', data=self.users)
+        return_values = self.client().post('/auth/register', data=self.users)
         self.assertEqual(return_values.status_code, 201)
         self.assertIn('User registered successfully', str(return_values.data))
 
     def test_invalid_email(self):
         """Test if the API can reject wrong email format provided
         """
-        invalid_email = {'email': 'kagunagmail.com', 'username': 'james', 'password': 'james123'}
+        invalid_email = {'email': 'kagunagmail.com', 'username': '@@##$%', 'password': 'james123'}
         return_values = self.client().post('/auth/register', data=invalid_email)
         self.assertEqual(return_values.status_code, 400)
-        self.assertIn('Invalid email given', str(return_values.data))
+        self.assertIn('Invalid email or username given', str(return_values.data))
 
     def test_empty_fields(self):
         """Test if the API can reject empty fields
@@ -58,6 +59,44 @@ class UsersAuthTestCase(unittest.TestCase):
         self.assertEqual(return_values.status_code, 409)
         self.assertIn('User exists!', str(return_values.data))
 
+    """User reset password"""
+
+    def test_successful_user_reset_password(self):
+        """Test API can reset password
+        """
+        self.client().post('/auth/register', data=self.users)
+        new_password_details = {'email': 'kaguna@gmail.com', 'password': 'james123', 'retyped_password': 'james123'}
+        response = self.client().put('/auth/reset_password', data=new_password_details)
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('Password resetting is successful', str(response.data))
+
+    def test_reset_password_with_invalid_email(self):
+        """Test API can reset password with invalid email
+        """
+        self.client().post('/auth/register', data=self.users)
+        new_password_details = {'email': 'kagunagmail.com', 'password': 'james123', 'retyped_password': 'james123'}
+        response = self.client().put('/auth/reset_password', data=new_password_details)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Invalid email given', str(response.data))
+
+    def test_reset_password_with_short_password(self):
+        """Test API can reset password with short password
+        """
+        self.client().post('/auth/register', data=self.users)
+        new_password_details = {'email': 'kaguna@gmail.com', 'password': 'jam', 'retyped_password': 'jam'}
+        response = self.client().put('/auth/reset_password', data=new_password_details)
+        self.assertEqual(response.status_code, 412)
+        self.assertIn('The password is too short', str(response.data))
+
+    def test_reset_password_with_password_mismatch(self):
+        """Test API can reset password with password mismatch
+        """
+        self.client().post('/auth/register', data=self.users)
+        new_password_details = {'email': 'kaguna@gmail.com', 'password': 'james123', 'retyped_password': 'pass123'}
+        response = self.client().put('/auth/reset_password', data=new_password_details)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Password mismatch', str(response.data))
+
     def tearDown(self):
         """teardown all initialized variables."""
         with self.app.app_context():
@@ -68,4 +107,3 @@ class UsersAuthTestCase(unittest.TestCase):
     # Make the tests conveniently executable
     if __name__ == "__main__":
         unittest.main()
-

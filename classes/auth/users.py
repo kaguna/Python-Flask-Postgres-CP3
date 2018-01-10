@@ -119,7 +119,7 @@ class ResetPassword(MethodView):
 
                             return make_response(jsonify({'message': 'Password resetting is successful'})), 201
                         return make_response(jsonify({'message': 'User does not exist!'})), 404
-                    return make_response(jsonify({'message': 'Password mismatch'})), 201
+                    return make_response(jsonify({'message': 'Password mismatch'})), 400
                 return make_response(jsonify({'message': 'The password is too short'})), 412
             return make_response(jsonify({'message': 'Invalid email given'})), 400
         return make_response(jsonify({'message': 'Please fill all the fields'})), 422
