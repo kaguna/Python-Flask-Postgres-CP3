@@ -1,5 +1,3 @@
-release: python manage.py db init
+web: gunicorn run:app
 release: python manage.py db migrate
 release: python manage.py db upgrade
-
-web: gunicorn run:app
