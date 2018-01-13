@@ -1,4 +1,4 @@
-release: python migration_script.py db migrate
-release: python migration_script.py db upgrade
+release: python manage.py db migrate
+release: python manage.py db upgrade
 
 web: gunicorn run:app

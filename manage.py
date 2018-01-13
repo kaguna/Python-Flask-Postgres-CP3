@@ -7,7 +7,7 @@ from app import models
 from app import db, create_app
 
 
-app = create_app(config_name=os.getenv('APP_SETTINGS'))
+app = create_app("testing")
 migrate = Migrate(app, db)
 manager = Manager(app)
 
