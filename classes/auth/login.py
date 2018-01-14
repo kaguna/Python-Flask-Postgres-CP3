@@ -52,10 +52,6 @@ class UserLoginAuthentication(MethodView):
         user_password = str(request.data.get('password', ''))
         user = Users.query.filter_by(email=user_email, password=user_password).first()
 
-        access_token = jwt.encode({'id': user.id, 'expiry_time': str(datetime.datetime.utcnow() +
-                                                                     datetime.timedelta(minutes=30))},
-                                  os.getenv('SECRET', '$#%^%$^%@@@@@56634@@@'))
-
         if not user_email and not user_password:
             return make_response(jsonify({'message': 'Please fill all the fields'})), 400
 
@@ -67,6 +63,10 @@ class UserLoginAuthentication(MethodView):
 
         if not user:
             return make_response(jsonify({'message': 'User not registered!'})), 404
+
+        access_token = jwt.encode({'id': user.id, 'expiry_time': str(datetime.datetime.utcnow() +
+                                                                     datetime.timedelta(minutes=30))},
+                                  os.getenv('SECRET', '$#%^%$^%@@@@@56634@@@'))
 
         if access_token:
             return make_response(jsonify({'access_token': access_token.decode(),

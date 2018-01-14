@@ -54,7 +54,7 @@ class CreateUser(MethodView):
             return make_response(jsonify({'message': 'Please fill all the fields'})), 400
 
         if not re.search(self.email_pattern, user_email):
-            return make_response(jsonify({'message': 'Invalid email or username given'})), 400
+            return make_response(jsonify({'message': 'Invalid email given'})), 400
 
         if not re.search(self.regex_username, user_name):
             return make_response(jsonify({'message': 'Invalid username given'})), 400
@@ -114,19 +114,19 @@ class ResetPassword(MethodView):
         retyped_password = str(request.data.get('retyped_password', ''))
         user = Users.query.filter_by(email=user_email).first()
 
-        if user_email and user_password:
+        if not user_email and not user_password:
             return make_response(jsonify({'message': 'Please fill all the fields'})), 400
 
-        if re.search(CreateUser.email_pattern, user_email):
+        if not re.search(CreateUser.email_pattern, user_email):
             return make_response(jsonify({'message': 'Invalid email given'})), 400
 
-        if len(user_password) < 7 and len(retyped_password) < 7:
+        if len(user_password) < 7 and  len(retyped_password) < 7:
             return make_response(jsonify({'message': 'The password is too short'})), 412
 
-        if user_password == retyped_password:
+        if user_password != retyped_password:
             return make_response(jsonify({'message': 'Password mismatch'})), 400
 
-        if user:
+        if not user:
             return make_response(jsonify({'message': 'User does not exist!'})), 404
 
         user.password = user_password
