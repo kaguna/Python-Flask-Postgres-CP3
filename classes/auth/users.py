@@ -8,6 +8,8 @@ from flask.views import MethodView
 class CreateUser(MethodView):
     """This class will handle the creation of new users
     """
+    email_pattern = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+    regex_username = "^[a-zA-Z0-9-+\s]{4,20}$"
 
     def post(self):
         # create user using post method
@@ -37,31 +39,35 @@ class CreateUser(MethodView):
           409:
             description: User exists!
           400:
-            description: Invalid email given
+            description: Invalid email or username given
           412:
             description: The password is too short
           422:
             description: Please fill all the fields
         """
-        email_pattern = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
-        regex_username = "^[a-zA-Z0-9-+\s]{4,20}$"
-        user_email = str(request.data.get('email', '')).strip()
+        user_email = str(request.data.get('email', '')).strip().lower()
         user = Users.query.filter_by(email=user_email).first()
         user_name = str(request.data.get('username', '')).strip()
         user_password = str(request.data.get('password', ''))
-        if user_email and user_name and user_password:
-            if re.search(email_pattern, user_email) or re.search(regex_username, user_name):
-                if len(user_password) >= 7:
-                    if not user:
 
-                        user_creation = Users(email=user_email, username=user_name, password=user_password)
-                        user_creation.save()
+        if not user_email and not user_name and not user_password:
+            return make_response(jsonify({'message': 'Please fill all the fields'})), 400
 
-                        return make_response(jsonify({'message': 'User registered successfully'})), 201
-                    return make_response(jsonify({'message': 'User exists!'})), 409
-                return make_response(jsonify({'message': 'The password is too short'})), 412
+        if not re.search(self.email_pattern, user_email):
             return make_response(jsonify({'message': 'Invalid email or username given'})), 400
-        return make_response(jsonify({'message': 'Please fill all the fields'})), 422
+
+        if not re.search(self.regex_username, user_name):
+            return make_response(jsonify({'message': 'Invalid username given'})), 400
+
+        if len(user_password) < 7:
+            return make_response(jsonify({'message': 'The password is too short'})), 412
+
+        if user:
+            return make_response(jsonify({'message': 'User exists!'})), 409
+
+        user_creation = Users(email=user_email, username=user_name, password=user_password)
+        user_creation.save()
+        return make_response(jsonify({'message': 'User registered successfully'})), 201
 
 
 class ResetPassword(MethodView):
@@ -103,26 +109,29 @@ class ResetPassword(MethodView):
           422:
             description: Please fill all the fields
         """
-        email_pattern = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
-        user_email = str(request.data.get('email', '')).strip()
+        user_email = str(request.data.get('email', '')).strip().lower()
         user_password = str(request.data.get('password', ''))
         retyped_password = str(request.data.get('retyped_password', ''))
         user = Users.query.filter_by(email=user_email).first()
+
         if user_email and user_password:
-            if re.search(email_pattern, user_email):
-                if len(user_password) >= 7 and len(retyped_password) >= 7:
-                    if user_password == retyped_password:
-                        if user:
+            return make_response(jsonify({'message': 'Please fill all the fields'})), 400
 
-                            user.password = user_password
-                            user.save()
-
-                            return make_response(jsonify({'message': 'Password resetting is successful'})), 201
-                        return make_response(jsonify({'message': 'User does not exist!'})), 404
-                    return make_response(jsonify({'message': 'Password mismatch'})), 400
-                return make_response(jsonify({'message': 'The password is too short'})), 412
+        if re.search(CreateUser.email_pattern, user_email):
             return make_response(jsonify({'message': 'Invalid email given'})), 400
-        return make_response(jsonify({'message': 'Please fill all the fields'})), 422
+
+        if len(user_password) < 7 and len(retyped_password) < 7:
+            return make_response(jsonify({'message': 'The password is too short'})), 412
+
+        if user_password == retyped_password:
+            return make_response(jsonify({'message': 'Password mismatch'})), 400
+
+        if user:
+            return make_response(jsonify({'message': 'User does not exist!'})), 404
+
+        user.password = user_password
+        user.save()
+        return make_response(jsonify({'message': 'Password resetting is successful'})), 201
 
 
 """Link the class and operation to a variable."""

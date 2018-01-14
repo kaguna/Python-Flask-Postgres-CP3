@@ -12,6 +12,7 @@ class NonFilteredCategoryManipulations(MethodView):
     """
 
     decorators = [token_required]
+    regexcategory_name = "^[a-zA-Z0-9-+\s]{4,20}$"
 
     def post(self, user_in_session):
         """
@@ -40,19 +41,23 @@ class NonFilteredCategoryManipulations(MethodView):
          422:
            description: Please fill all the fields
         """
-        categoryname = str(request.data.get('category_name', '')).strip()
-        regexcategory_name = "^[a-zA-Z0-9-+\s]{4,20}$"
-        users_id = user_in_session
-        category_exist = Categories.query.filter_by(users_id=user_in_session, category_name=categoryname).first()
-        if categoryname:
-            if re.search(regexcategory_name, categoryname):
-                if not category_exist:
-                    categories = Categories(category_name=categoryname, users_id=users_id)
-                    categories.save()
-                    return make_response(jsonify({'message': 'Category created successfully'})), 201
-                return make_response(jsonify({'message': 'Category exists!'})), 409
+        category_name = str(request.data.get('category_name', '')).strip()
+        check_category_exist = Categories.query.filter_by(users_id=user_in_session,
+                                                          category_name=category_name).first()
+
+        if not category_name:
+            return make_response(jsonify({'message': 'Please fill all the fields'})), 400
+
+        if not re.search(self.regexcategory_name, category_name):
             return make_response(jsonify({'message': 'Invalid category name given'})), 400
-        return make_response(jsonify({'message': 'Please fill all the fields'})), 422
+
+        if check_category_exist:
+            return make_response(jsonify({'message': 'Category exists!'})), 409
+
+        categories = Categories(category_name=category_name, users_id=user_in_session)
+        categories.save()
+        return make_response(jsonify({'message': 'Category created successfully'})), 201
+
 
     def get(self, user_in_session):
         """
@@ -91,7 +96,9 @@ class NonFilteredCategoryManipulations(MethodView):
         page_number = int(request.args.get("page", default=1))
         no_items_per_page = int(request.args.get("limit", default=10))
 
-        all_categories = Categories.get_all(user_in_session).paginate(page_number, no_items_per_page, error_out=False)
+        all_categories = Categories.get_all(user_in_session).\
+            paginate(page_number, no_items_per_page, error_out=False)
+
         search = request.args.get('q')
         category_list = []
 
@@ -111,7 +118,7 @@ class NonFilteredCategoryManipulations(MethodView):
                             }
                     category_list.append(obj)
                 if len(category_list) <= 0:
-                    return make_response(jsonify({'message': "Category with the character(s) not found"})), 401
+                    return make_response(jsonify({'message': "Category does not exist."})), 401
                 return make_response(jsonify(category_list)), 200
 
         for categories in all_categories.items:
@@ -159,7 +166,7 @@ class FilteredCategoryManipulations(MethodView):
             response = jsonify(category_attributes)
             response.status_code = 200
             return category_attributes
-        return make_response(jsonify({'message': 'Category not found'})), 401
+        return make_response(jsonify({'message': 'Category does not exist.'})), 401
 
     def put(self, user_in_session, category_id):
         """
@@ -189,23 +196,27 @@ class FilteredCategoryManipulations(MethodView):
                description: Please fill all the fields
         """
 
-        categoryname = str(request.data.get('category_name', '')).strip()
-        regexcategory_name = "^[a-zA-Z0-9-+\s]{4,20}$"
-        get_the_category = Categories.query.filter_by(users_id=user_in_session, id=category_id).first()
-        if get_the_category:
-            if categoryname:
-                if re.search(regexcategory_name, categoryname):
-                    unique_category = Categories.name_unique(category_name=categoryname, owner_id=user_in_session)
-                    if not unique_category:
+        category_name = str(request.data.get('category_name', '')).strip()
+        retrieve_the_category = Categories.query.filter_by(users_id=user_in_session,
+                                                           id=category_id).first()
 
-                        get_the_category.category_name = categoryname
-                        get_the_category.save()
+        if not retrieve_the_category:
+            return make_response(jsonify({'message': 'Category does not exist.'})), 401
 
-                        return make_response(jsonify({'message': 'Category updated successfully'})), 201
-                    return make_response(jsonify({'message': 'Category exists!'})), 409
-                return make_response(jsonify({'message': 'Invalid category name given'})), 400
-            return make_response(jsonify({'message': 'Please fill all the fields'})), 422
-        return make_response(jsonify({'message': 'Category not found'})), 401
+        if not category_name:
+            return make_response(jsonify({'message': 'Please fill all the fields'})), 400
+
+        if not re.search(NonFilteredCategoryManipulations.regexcategory_name, category_name):
+            return make_response(jsonify({'message': 'Invalid category name given'})), 400
+
+        check_is_category_unique = Categories.name_unique(category_name=category_name,
+                                                          owner_id=user_in_session)
+        if check_is_category_unique:
+            return make_response(jsonify({'message': 'Category name exists!'})), 409
+
+        retrieve_the_category.category_name = category_name
+        retrieve_the_category.save()
+        return make_response(jsonify({'message': 'Category updated successfully'})), 201
 
     def delete(self, user_in_session, category_id):
         """
@@ -224,11 +235,13 @@ class FilteredCategoryManipulations(MethodView):
          401:
            description: Category not found
         """
-        category = Categories.query.filter_by(users_id=user_in_session, id=category_id).first()
-        if category:
-            category.delete()
-            return make_response(jsonify({'message': 'Category deleted'})), 200
-        return make_response(jsonify({'message': 'Category not found'})), 401
+        retrieve_category_to_delete = Categories.query.filter_by(users_id=user_in_session,
+                                                                 id=category_id).first()
+        if retrieve_category_to_delete:
+            return make_response(jsonify({'message': 'Category does not exist.'})), 401
+
+        retrieve_category_to_delete.delete()
+        return make_response(jsonify({'message': 'Category deleted successfully.'})), 200
 
 
 filtered_category = FilteredCategoryManipulations.as_view('filtered_category')

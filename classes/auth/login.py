@@ -48,32 +48,32 @@ class UserLoginAuthentication(MethodView):
             description: Please fill all the fields
         """
         email_pattern = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
-        user_email = str(request.data.get('email', '')).strip()
+        user_email = str(request.data.get('email', '')).strip().lower()
         user_password = str(request.data.get('password', ''))
-        if user_email and user_password:
-            if re.search(email_pattern, user_email):
-                if len(user_password) >= 7:
-                    user = Users.query.filter_by(email=user_email, password=user_password).first()
-                    if user:
-                        access_token = jwt.encode({'id': user.id,
-                                                   'expiry_time': str(datetime.datetime.utcnow() +
-                                                                      datetime.timedelta(minutes=30))},
-                                                  os.getenv('SECRET', '$#%^%$^%@@@@@56634@@@'))
-                        if access_token:
+        user = Users.query.filter_by(email=user_email, password=user_password).first()
 
-                            valid_response = {'access_token': access_token.decode(),
-                                              'message': 'Successful login'
-                                              }
-                            return make_response(jsonify(valid_response)), 200
+        access_token = jwt.encode({'id': user.id, 'expiry_time': str(datetime.datetime.utcnow() +
+                                                                     datetime.timedelta(minutes=30))},
+                                  os.getenv('SECRET', '$#%^%$^%@@@@@56634@@@'))
 
-                        invalid_response = {'message': 'Invalid access token'
-                                            }
-                        return make_response(jsonify(invalid_response)), 401
+        if not user_email and not user_password:
+            return make_response(jsonify({'message': 'Please fill all the fields'})), 400
 
-                    return make_response(jsonify({'message': 'User not registered!'})), 404
-                return make_response(jsonify({'message': 'The password is too short'})), 412
+        if not re.search(email_pattern, user_email):
             return make_response(jsonify({'message': 'Invalid email given'})), 400
-        return make_response(jsonify({'message': 'Please fill all the fields'})), 422
+
+        if len(user_password) < 7:
+            return make_response(jsonify({'message': 'The password is too short'})), 412
+
+        if not user:
+            return make_response(jsonify({'message': 'User not registered!'})), 404
+
+        if access_token:
+            return make_response(jsonify({'access_token': access_token.decode(),
+                                          'message': 'Successful login'})), 200
+        else:
+
+            return make_response(jsonify({'message': 'Invalid access token'})), 401
 
 
 class UserLogoutAuthentication(MethodView):
@@ -98,11 +98,11 @@ class UserLogoutAuthentication(MethodView):
         """
         access_token = request.headers.get('x-access-token')
         if access_token:
-            
+            user = Users.query.filter_by(id=user_in_session).first()
             save_tokens = BlacklistToken(token=access_token)
             save_tokens.save()
 
-            return make_response(jsonify({'message': 'User '+str(user_in_session)+' logged out successfully'})), 200
+            return make_response(jsonify({'message': 'User '+str(user.username)+' logged out successfully'})), 200
         return make_response(jsonify({'message': 'Invalid access token'})), 401
 
 
