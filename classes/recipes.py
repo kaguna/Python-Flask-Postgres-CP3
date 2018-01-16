@@ -1,7 +1,7 @@
-# recipes API CRUD operations
+# This file provides the CRUD operations for the recipes.
 
 from flask import request, jsonify, make_response
-from app.models import Users, Categories, Recipes
+from app.models import Recipes
 from flask.views import MethodView
 from classes.auth.auth import token_required
 import re
@@ -13,7 +13,6 @@ class NonFilteredRecipesManipulations(MethodView):
 
     decorators = [token_required]
     regex_recipe_name = "^[a-zA-Z0-9-+\s]{4,20}$"
-    regex_recipe_procedure = "^[a-zA-Z0-9-+\s]{4,100}$"
 
     def post(self, user_in_session, category_id):
         # This method will create and save a recipe
@@ -57,6 +56,7 @@ class NonFilteredRecipesManipulations(MethodView):
         check_recipe_existence = Recipes.query.filter_by(users_id=user_in_session,
                                                          category_id=category_id,
                                                          recipe_name=recipe_name).first()
+        # This checks whether the catgory specified has the a similar category name from the user.
         try:
             if not recipe_name and not recipe_procedure:
                 return make_response(jsonify({'message': 'Please fill all the fields'})), 400
@@ -64,15 +64,13 @@ class NonFilteredRecipesManipulations(MethodView):
             if not re.search(self.regex_recipe_name, recipe_name):
                 return make_response(jsonify({'message': 'Invalid recipe name given'})), 400
 
-            if not re.search(self.regex_recipe_procedure, recipe_procedure):
-                return make_response(jsonify({'message': 'Invalid procedure given'})), 400
-
             if check_recipe_existence:
                 return make_response(jsonify({'message': 'Recipe name exists!'})), 409
 
             recipes_save = Recipes(recipe_name=recipe_name, recipe_description=recipe_procedure,
                                    category_id=category_id, users_id=user_in_session)
             recipes_save.save()
+            # This saves the category after it passes all the conditions.
 
             return make_response(jsonify({'message': 'Recipe created successfully'})), 201
         except Exception:
@@ -124,16 +122,20 @@ class NonFilteredRecipesManipulations(MethodView):
         page_number = request.args.get("page", default=1, type=int)
         no_items_per_page = request.args.get("limit", default=10, type=int)
         search_recipe = request.args.get('q')
+        # These are the arguments to be provided in the url
 
         category_recipes = Recipes.get_all(category_id).paginate(page_number,
                                                                  no_items_per_page, error_out=False)
+        # This retrieves all the recipes belonging to a specific category.
 
         recipe_list = []
         if search_recipe:
-            search_recipes = Recipes.query.filter(Recipes.category_id == category_id,
+            # This filters the recipes when the user provides the search parameters q.
+            search_recipes = Recipes.query.filter(Recipes.users_id == user_in_session,
                                                   Recipes.recipe_name.ilike('%' + search_recipe + '%')).\
                 paginate(page_number, no_items_per_page, error_out=False)
             for recipes in search_recipes.items:
+                # This loops retrieves all the recipes that match the search string.
                 searched_recipes = {
                     'id': recipes.id,
                     'recipe_name': recipes.recipe_name,
@@ -145,10 +147,12 @@ class NonFilteredRecipesManipulations(MethodView):
                 recipe_list.append(searched_recipes)
 
             if len(recipe_list) <= 0:
-                return make_response(jsonify({'message': "Recipe does not exist."})), 401
+                # This checks whether the searched recipe list contains data.
+                return make_response(jsonify({'message': "Recipe does not exist."})), 404
             return make_response(jsonify(recipe_list)), 200
 
         for recipes in category_recipes.items:
+            # This loops all the recipes of the category with no search parameters.
             all_recipes = {
                 'id': recipes.id,
                 'recipe_name': recipes.recipe_name,
@@ -197,6 +201,7 @@ class FilteredRecipesManipulations(MethodView):
                                                 category_id=category_id,
                                                 id=recipe_id).first()
         if single_recipe:
+            # This checks whether the provided recipe exists
             one_recipe = {
                 'id': single_recipe.id,
                 'recipe_name': single_recipe.recipe_name,
@@ -257,6 +262,7 @@ class FilteredRecipesManipulations(MethodView):
         retrieve_recipe = Recipes.query.filter_by(users_id=user_in_session,
                                                   id=recipe_id,
                                                   category_id=category_id).first()
+        # The retrieve_recipe stores the result of recipe to be updated.
 
         if not retrieve_recipe:
             return make_response(jsonify({'message': 'Recipe does not exist.'})), 404
@@ -270,10 +276,12 @@ class FilteredRecipesManipulations(MethodView):
         check_recipe_is_unique = Recipes.recipe_name_unique(recipe_name=recipe_name,
                                                             category_id=category_id)
         if check_recipe_is_unique:
+            # This checks whether the recipe exists in the specified category.
             return make_response(jsonify({'message': 'Recipe name exists!'})), 409
 
         retrieve_recipe.recipe_name = recipe_name
         retrieve_recipe.save()
+        # This saves the category name after update.
         return make_response(jsonify({'message': 'Recipe updated successfully'})), 201
 
     def delete(self, user_in_session, category_id, recipe_id):
@@ -302,11 +310,12 @@ class FilteredRecipesManipulations(MethodView):
         """
         recipe = Recipes.query.filter_by(users_id=user_in_session, id=recipe_id,
                                          category_id=category_id).first()
+        # The recipe variable stores the result if the specific recipe to be deleted.
         if recipe:
             recipe.delete()
             return make_response(jsonify({'message': 'Recipe deleted'})), 200
         return make_response(jsonify({'message': 'Recipe does not exist.'})), 404
 
 
-nonfiltered_recipes = NonFilteredRecipesManipulations.as_view('nonfiltered_recipes')
+non_filtered_recipes = NonFilteredRecipesManipulations.as_view('non_filtered_recipes')
 filtered_recipes = FilteredRecipesManipulations.as_view('filtered_recipes')

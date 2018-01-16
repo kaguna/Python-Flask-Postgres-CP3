@@ -1,46 +1,50 @@
 # This file tests user authentication
-import unittest
-from app import create_app, db
+from .base_tests import BaseTestCase
+import json
 
 
-class UsersAuthTestCase(unittest.TestCase):
-    """This class represents the users auth test cases"""
+class UsersAuthTestCase(BaseTestCase):
+    """This class represents the users auth test cases
+    """
 
     def setUp(self):
-        """Define test variables and initialize app."""
-        self.app = create_app(config_name="testing")
-        self.client = self.app.test_client
-        self.users = {'email': 'kaguna@gmail.com', 'username': 'james', 'password': 'james123'}
+        super(UsersAuthTestCase, self).setUp()
+        self.register_response = self.client().post('/auth/register', data=self.register_user)
+        self.login_details = self.client().post('/auth/login', data=self.login_user)
+        self.access_token = json.loads(self.login_details.data.decode())['access_token']
 
-        # binds the app to the current context
-        with self.app.app_context():
-            # create all tables
-            db.create_all()
+    # User creation
 
-    """ User creation"""
-    def test_successful_user_registration(self):
+    def test_successful_user_creation(self):
         """Test API can create a user (POST request)"""
-        return_values = self.client().post('/auth/register', data=self.users)
-        self.assertEqual(return_values.status_code, 201)
-        self.assertIn('User registered successfully', str(return_values.data))
+        self.assertEqual(self.register_response.status_code, 201)
+        self.assertIn('User registered successfully', str(self.register_response.data))
 
     def test_invalid_email(self):
         """Test if the API can reject wrong email format provided
         """
-        invalid_email = {'email': 'kagunagmail.com', 'username': '@@##$%', 'password': 'james123'}
+        invalid_email = {'email': 'kagunagmail.com', 'username': 'kaguna', 'password': 'james123'}
         return_values = self.client().post('/auth/register', data=invalid_email)
         self.assertEqual(return_values.status_code, 400)
-        self.assertIn('Invalid email or username given', str(return_values.data))
+        self.assertIn('Invalid email given', str(return_values.data))
 
-    def test_empty_fields(self):
+    def test_invalid_username(self):
+        """Test if the API can reject wrong username format provided
+        """
+        invalid_username = {'email': 'kaguna@gmail.com', 'username': '@@##$%', 'password': 'james123'}
+        return_values = self.client().post('/auth/register', data=invalid_username)
+        self.assertEqual(return_values.status_code, 400)
+        self.assertIn('Invalid username given', str(return_values.data))
+
+    def test_on_empty_fields_submission(self):
         """Test if the API can reject empty fields
         """
         empty_fields = {'email': '', 'username': '', 'password': ''}
         return_values = self.client().post('/auth/register', data=empty_fields)
-        self.assertEqual(return_values.status_code, 422)
+        self.assertEqual(return_values.status_code, 400)
         self.assertIn('Please fill all the fields', str(return_values.data))
 
-    def test_password_length(self):
+    def test_length_of_password(self):
         """Test if the API can reject a password with less than 7 characters
         """
         password_length = {'email': 'kaguna@gmail.com', 'username': 'james', 'password': 'j123'}
@@ -48,23 +52,18 @@ class UsersAuthTestCase(unittest.TestCase):
         self.assertEqual(return_values.status_code, 412)
         self.assertIn('The password is too short', str(return_values.data))
 
-    def test_user_email_existence(self):
+    def test_with_user_email_already_created(self):
         """Test if the API can reject a user who exists in the database
         """
-        return_values = self.client().post('/auth/register', data=self.users)
-        self.assertEqual(return_values.status_code, 201)
-        self.assertIn('User registered successfully', str(return_values.data))
-
-        return_values = self.client().post('/auth/register', data=self.users)
+        return_values = self.client().post('/auth/register', data=self.register_user)
         self.assertEqual(return_values.status_code, 409)
         self.assertIn('User exists!', str(return_values.data))
 
-    """User reset password"""
+    # User reset password
 
     def test_successful_user_reset_password(self):
         """Test API can reset password
         """
-        self.client().post('/auth/register', data=self.users)
         new_password_details = {'email': 'kaguna@gmail.com', 'password': 'james123', 'retyped_password': 'james123'}
         response = self.client().put('/auth/reset_password', data=new_password_details)
         self.assertEqual(response.status_code, 201)
@@ -73,7 +72,6 @@ class UsersAuthTestCase(unittest.TestCase):
     def test_reset_password_with_invalid_email(self):
         """Test API can reset password with invalid email
         """
-        self.client().post('/auth/register', data=self.users)
         new_password_details = {'email': 'kagunagmail.com', 'password': 'james123', 'retyped_password': 'james123'}
         response = self.client().put('/auth/reset_password', data=new_password_details)
         self.assertEqual(response.status_code, 400)
@@ -82,7 +80,6 @@ class UsersAuthTestCase(unittest.TestCase):
     def test_reset_password_with_short_password(self):
         """Test API can reset password with short password
         """
-        self.client().post('/auth/register', data=self.users)
         new_password_details = {'email': 'kaguna@gmail.com', 'password': 'jam', 'retyped_password': 'jam'}
         response = self.client().put('/auth/reset_password', data=new_password_details)
         self.assertEqual(response.status_code, 412)
@@ -91,19 +88,17 @@ class UsersAuthTestCase(unittest.TestCase):
     def test_reset_password_with_password_mismatch(self):
         """Test API can reset password with password mismatch
         """
-        self.client().post('/auth/register', data=self.users)
-        new_password_details = {'email': 'kaguna@gmail.com', 'password': 'james123', 'retyped_password': 'pass123'}
+        new_password_details = {'email': 'kaguna@gmail.com', 'password': 'james123', 'retyped_password': 'james321'}
         response = self.client().put('/auth/reset_password', data=new_password_details)
         self.assertEqual(response.status_code, 400)
         self.assertIn('Password mismatch', str(response.data))
 
-    def tearDown(self):
-        """teardown all initialized variables."""
-        with self.app.app_context():
-            # drop all tables
-            db.session.remove()
-            db.drop_all()
+    # Test login
 
-    # Make the tests conveniently executable
-    if __name__ == "__main__":
-        unittest.main()
+    def test_successful_login(self):
+        """Test API can successfully login.
+        """
+        self.assertEqual(self.login_details.status_code, 200)
+        self.assertIn('Successful login', str(self.login_details.data))
+
+
