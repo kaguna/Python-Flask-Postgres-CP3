@@ -108,6 +108,6 @@ class UserLogoutAuthentication(MethodView):
         return make_response(jsonify({'message': 'Invalid access token'})), 401
 
 
-"""Link the class and operation to a variable."""
+# Link the class and operation to a variable.
 user_login = UserLoginAuthentication.as_view('user_login')
 user_logout = UserLogoutAuthentication.as_view('user_logout')

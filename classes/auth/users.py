@@ -136,6 +136,6 @@ class ResetPassword(MethodView):
         return make_response(jsonify({'message': 'Password resetting is successful'})), 201
 
 
-"""Link the class and operation to a variable."""
+# Link the class and operation to a variable.
 user_creation = CreateUser.as_view('user_creation')
 reset_password = ResetPassword.as_view('reset_password')
