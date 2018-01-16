@@ -13,6 +13,7 @@ from classes.auth.auth import token_required
 class UserLoginAuthentication(MethodView):
     """This class will handle the access of resources by user through login.
     """
+    @classmethod
     def post(self):
         # User login using post method
         """
@@ -81,6 +82,7 @@ class UserLogoutAuthentication(MethodView):
     """
     decorators = [token_required]
 
+    @classmethod
     def post(self, user_in_session):
         """Method to logout the user
 

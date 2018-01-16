@@ -14,6 +14,7 @@ class NonFilteredCategoryMethods(MethodView):
     decorators = [token_required]
     regex_category_name = "^[a-zA-Z0-9-+\s]{4,20}$"
 
+    @classmethod
     def post(self, user_in_session):
         """
        Create category
@@ -60,6 +61,7 @@ class NonFilteredCategoryMethods(MethodView):
         # This saves the new categories after it passes all the conditions.
         return make_response(jsonify({'message': 'Category created successfully'})), 201
 
+    @classmethod
     def get(self, user_in_session):
         """
            Retrieve categories
@@ -150,6 +152,7 @@ class FilteredCategoryMethods(MethodView):
     """
     decorators = [token_required]
 
+    @classmethod
     def get(self, user_in_session, category_id):
         """
        Retrieve single category
@@ -180,6 +183,7 @@ class FilteredCategoryMethods(MethodView):
             return category_attributes
         return make_response(jsonify({'message': 'Category does not exist.'})), 401
 
+    @classmethod
     def put(self, user_in_session, category_id):
         """
        Edit single category
@@ -241,6 +245,7 @@ class FilteredCategoryMethods(MethodView):
         # The changes after the update are then stored.
         return make_response(jsonify({'message': 'Category updated successfully'})), 201
 
+    @classmethod
     def delete(self, user_in_session, category_id):
         """
        Delete a category

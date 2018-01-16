@@ -11,6 +11,7 @@ class CreateUser(MethodView):
     email_pattern = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
     regex_username = "^[a-zA-Z0-9-+\s]{4,20}$"
 
+    @classmethod
     def post(self):
         # create user using post method
         """
@@ -72,6 +73,7 @@ class CreateUser(MethodView):
 
 class ResetPassword(MethodView):
     """This class will handle the resetting of password"""
+    @classmethod
     def put(self):
         # This method will edit the already existing password
 
