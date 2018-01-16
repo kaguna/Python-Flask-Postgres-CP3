@@ -1,9 +1,7 @@
 # Script to make the model migrations
 
-import os
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
-from app import models
 from app import db
 from run import app
 

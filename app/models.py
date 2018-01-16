@@ -63,7 +63,10 @@ class Categories(db.Model):
 
     @staticmethod
     def name_unique(owner_id, category_name):
-        check_category_existence = Categories.query.filter_by(category_name=category_name, users_id=owner_id).first()
+        check_category_existence = Categories.query.filter_by(
+            category_name=category_name,
+            users_id=owner_id).first()
+
         return check_category_existence
 
     def delete(self):
@@ -109,7 +112,10 @@ class Recipes(db.Model):
 
     @staticmethod
     def recipe_name_unique(recipe_name, category_id):
-        recipe_existence = Recipes.query.filter_by(recipe_name=recipe_name, category_id=category_id).first()
+        recipe_existence = Recipes.query.filter_by(
+            recipe_name=recipe_name,
+            category_id=category_id).first()
+
         return recipe_existence
 
     @staticmethod

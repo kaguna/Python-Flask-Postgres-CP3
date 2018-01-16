@@ -51,7 +51,7 @@ class UserLoginAuthentication(MethodView):
         email_pattern = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
         user_email = str(request.data.get('email', '')).strip().lower()
         user_password = str(request.data.get('password', ''))
-        user = Users.query.filter_by(email=user_email, password=user_password).first()
+        user_details = Users.query.filter_by(email=user_email, password=user_password).first()
 
         if not user_email and not user_password:
             return make_response(jsonify({'message': 'Please fill all the fields'})), 400
@@ -62,10 +62,10 @@ class UserLoginAuthentication(MethodView):
         if len(user_password) < 7:
             return make_response(jsonify({'message': 'The password is too short'})), 412
 
-        if not user:
+        if not user_details:
             return make_response(jsonify({'message': 'User not registered!'})), 404
 
-        access_token = jwt.encode({'id': user.id, 'expiry_time': str(datetime.datetime.utcnow() +
+        access_token = jwt.encode({'id': user_details.id, 'expiry_time': str(datetime.datetime.utcnow() +
                                                                      datetime.timedelta(minutes=30))},
                                   os.getenv('SECRET', '$#%^%$^%@@@@@56634@@@'))
 
@@ -100,11 +100,12 @@ class UserLogoutAuthentication(MethodView):
         """
         access_token = request.headers.get('x-access-token')
         if access_token:
-            user = Users.query.filter_by(id=user_in_session).first()
+            user_details = Users.query.filter_by(id=user_in_session).first()
             save_tokens = BlacklistToken(token=access_token)
             save_tokens.save()
 
-            return make_response(jsonify({'message': 'User '+str(user.username)+' logged out successfully'})), 200
+            return make_response(jsonify({'message': 'User '+str(user_details.username) +
+                                                     ' logged out successfully'})), 200
         return make_response(jsonify({'message': 'Invalid access token'})), 401
 
 
