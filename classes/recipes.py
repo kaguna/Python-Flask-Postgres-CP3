@@ -14,6 +14,7 @@ class NonFilteredRecipesManipulations(MethodView):
     decorators = [token_required]
     regex_recipe_name = "^[a-zA-Z0-9-+\s]{4,20}$"
 
+    @classmethod
     def post(self, user_in_session, category_id):
         # This method will create and save a recipe
         """
@@ -76,6 +77,7 @@ class NonFilteredRecipesManipulations(MethodView):
         except Exception:
             return make_response(jsonify({'message': 'Category does not exist.'})), 404
 
+    @classmethod
     def get(self, user_in_session, category_id):
         # This method will retrieve all the recipes under the category given
 
@@ -173,6 +175,7 @@ class FilteredRecipesManipulations(MethodView):
     """
     decorators = [token_required]
 
+    @classmethod
     def get(self, user_in_session, category_id, recipe_id):
         # Retrieve a specific recipe from cetegory given
 
@@ -215,6 +218,7 @@ class FilteredRecipesManipulations(MethodView):
             return response
         return make_response(jsonify({'message': 'Recipe does not exist'})), 404
 
+    @classmethod
     def put(self, user_in_session, category_id, recipe_id):
         # Edit the recipe name from a given category
 
@@ -284,6 +288,7 @@ class FilteredRecipesManipulations(MethodView):
         # This saves the category name after update.
         return make_response(jsonify({'message': 'Recipe updated successfully'})), 201
 
+    @classmethod
     def delete(self, user_in_session, category_id, recipe_id):
         """
           Delete a Recipe
