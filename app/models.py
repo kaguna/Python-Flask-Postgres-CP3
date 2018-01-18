@@ -4,6 +4,7 @@ from app import db
 
 # import the db connection from the app/__init__.py
 
+
 class Users(db.Model):
     """ This class represents the users table"""
     __tablename__ = 'users'
@@ -15,12 +16,13 @@ class Users(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(),
                            onupdate=db.func.current_timestamp())
-    categories = db.relationship(
-        'Categories', order_by='categories.id', cascade="all, delete-orphan")
+    categories = db.relationship('Categories', order_by='Categories.id', cascade="all, delete-orphan")
 
-    def __init__(self, email):
+    def __init__(self, email, username, password):
         """initialize with user email."""
         self.email = email
+        self.username = username
+        self.password = password
 
     def save(self):
         db.session.add(self)
@@ -43,30 +45,37 @@ class Categories(db.Model):
     __tablename__ = 'categories'
 
     id = db.Column(db.Integer, primary_key=True)
-    category_name = db.Column(db.String(100), unique=True)
-    category_owner_email = db.Column(db.String(100))
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    category_name = db.Column(db.String(100))
+    users_id = db.Column(db.Integer, db.ForeignKey(Users.id), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(),
                            onupdate=db.func.current_timestamp())
-    recipes = db.relationship(
-        'Recipes', order_by='recipes.id', cascade="all, delete-orphan")
+    recipes = db.relationship('Recipes', order_by='Recipes.id', cascade="all, delete-orphan")
 
-    def __init__(self, category_name):
-        """initialize with user email."""
+    def __init__(self, category_name, users_id):
+        """initialize with category name and user id."""
         self.category_name = category_name
+        self.users_id = users_id
 
     def save(self):
         db.session.add(self)
         db.session.commit()
+
+    @staticmethod
+    def name_unique(owner_id, category_name):
+        check_category_existence = Categories.query.filter_by(
+            category_name=category_name,
+            users_id=owner_id).first()
+
+        return check_category_existence
 
     def delete(self):
         db.session.delete(self)
         db.session.commit()
 
     @staticmethod
-    def get_all():
-        return Categories.query.all()
+    def get_all(owner_id):
+        return Categories.query.filter_by(users_id=owner_id)
 
     def __repr__(self):
         return "<Categories: {}>".format(self.category_name)
@@ -78,16 +87,20 @@ class Recipes(db.Model):
     __tablename__ = 'recipes'
 
     id = db.Column(db.Integer, primary_key=True)
-    recipe_name = db.Column(db.String(100), unique=True)
-    recipe_description = db.Column(db.String(255))
-    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
+    recipe_name = db.Column(db.String(100))
+    recipe_description = db.Column(db.String(1024))
+    category_id = db.Column(db.Integer, db.ForeignKey(Categories.id), nullable=False)
+    users_id = db.Column(db.Integer, db.ForeignKey(Users.id), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(),
                            onupdate=db.func.current_timestamp())
 
-    def __init__(self, recipe_name):
-        """initialize with user email."""
+    def __init__(self, recipe_name, recipe_description, category_id, users_id):
+        """initialize with recipe details."""
         self.recipe_name = recipe_name
+        self.recipe_description = recipe_description
+        self.category_id = category_id
+        self.users_id = users_id
 
     def save(self):
         db.session.add(self)
@@ -98,8 +111,36 @@ class Recipes(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_all():
-        return Recipes.query.all()
+    def recipe_name_unique(recipe_name, category_id):
+        recipe_existence = Recipes.query.filter_by(
+            recipe_name=recipe_name,
+            category_id=category_id).first()
+
+        return recipe_existence
+
+    @staticmethod
+    def get_all(category):
+        return Recipes.query.filter_by(category_id=category)
 
     def __repr__(self):
         return "<Recipes: {}>".format(self.recipe_name)
+
+
+class BlacklistToken(db.Model):
+    """Save tokens after successful logout"""
+
+    __tablename__ = 'blacklisted_tokens'
+
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(1024))
+    date_blacklisted = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def __init__(self, token):
+        self.token = token
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def __repr__(self):
+        return "<Token: {}>".format(self.token)
