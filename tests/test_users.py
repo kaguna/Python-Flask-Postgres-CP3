@@ -64,32 +64,44 @@ class UsersAuthTestCase(BaseTestCase):
     def test_successful_user_reset_password(self):
         """Test API can reset password
         """
-        new_password_details = {'email': 'kaguna@gmail.com', 'password': 'james123', 'retyped_password': 'james123'}
-        response = self.client().put('/auth/reset_password', data=new_password_details)
+        new_password_details = {'email': 'kaguna@gmail.com', 'password': 'james123',
+                                'retyped_password': 'james123'}
+        response = self.client().put('/auth/reset_password',
+                                     headers={'x-access-token': self.access_token},
+                                     data=new_password_details)
         self.assertEqual(response.status_code, 201)
         self.assertIn('Password resetting is successful', str(response.data))
 
     def test_reset_password_with_invalid_email(self):
         """Test API can reset password with invalid email
         """
-        new_password_details = {'email': 'kagunagmail.com', 'password': 'james123', 'retyped_password': 'james123'}
-        response = self.client().put('/auth/reset_password', data=new_password_details)
+        new_password_details = {'email': 'kagunagmail.com', 'password': 'james123',
+                                'retyped_password': 'james123'}
+        response = self.client().put('/auth/reset_password',
+                                     headers={'x-access-token': self.access_token},
+                                     data=new_password_details)
         self.assertEqual(response.status_code, 400)
         self.assertIn('Invalid email given', str(response.data))
 
     def test_reset_password_with_short_password(self):
         """Test API can reset password with short password
         """
-        new_password_details = {'email': 'kaguna@gmail.com', 'password': 'jam', 'retyped_password': 'jam'}
-        response = self.client().put('/auth/reset_password', data=new_password_details)
+        new_password_details = {'email': 'kaguna@gmail.com', 'password': 'jam',
+                                'retyped_password': 'jam'}
+        response = self.client().put('/auth/reset_password',
+                                     headers={'x-access-token': self.access_token},
+                                     data=new_password_details)
         self.assertEqual(response.status_code, 412)
         self.assertIn('The password is too short', str(response.data))
 
     def test_reset_password_with_password_mismatch(self):
         """Test API can reset password with password mismatch
         """
-        new_password_details = {'email': 'kaguna@gmail.com', 'password': 'james123', 'retyped_password': 'james321'}
-        response = self.client().put('/auth/reset_password', data=new_password_details)
+        new_password_details = {'email': 'kaguna@gmail.com', 'password': 'james123',
+                                'retyped_password': 'james321'}
+        response = self.client().put('/auth/reset_password',
+                                     headers={'x-access-token': self.access_token},
+                                     data=new_password_details)
         self.assertEqual(response.status_code, 400)
         self.assertIn('Password mismatch', str(response.data))
 
