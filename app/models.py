@@ -119,8 +119,8 @@ class Recipes(db.Model):
         return recipe_existence
 
     @staticmethod
-    def get_all(category):
-        return Recipes.query.filter_by(category_id=category)
+    def get_all(category, user):
+        return Recipes.query.filter_by(category_id=category, users_id=user)
 
     def __repr__(self):
         return "<Recipes: {}>".format(self.recipe_name)

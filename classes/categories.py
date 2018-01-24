@@ -42,7 +42,7 @@ class NonFilteredCategoryMethods(MethodView):
          422:
            description: Please fill all the fields
         """
-        category_name = str(request.data.get('category_name', '')).strip()
+        category_name = str(request.data.get('category_name', '')).strip().lower()
         check_category_exist = Categories.query.filter_by(users_id=user_in_session,
                                                           category_name=category_name).first()
 
@@ -96,8 +96,8 @@ class NonFilteredCategoryMethods(MethodView):
              422:
                description: Please fill all the fields
         """
-        page_number = int(request.args.get("page", default=1))
-        no_items_per_page = int(request.args.get("limit", default=10))
+        page_number = int(request.args.get("page", default=1, type=int))
+        no_items_per_page = int(request.args.get("limit", default=10, type=int))
 
         all_categories = Categories.get_all(user_in_session).paginate(
             page_number, no_items_per_page, error_out=False)
@@ -218,7 +218,7 @@ class FilteredCategoryMethods(MethodView):
                description: Please fill all the fields
         """
 
-        category_name = str(request.data.get('category_name', '')).strip()
+        category_name = str(request.data.get('category_name', '')).strip().lower()
         retrieve_the_category = Categories.query.filter_by(users_id=user_in_session,
                                                            id=category_id).first()
         # The retrieve_the_category stores the specific retrieved
