@@ -22,7 +22,7 @@ def token_required(f):
                 data = jwt.decode(access_token, os.getenv('SECRET', '$#%^%$^%@@@@@56634@@@'))
                 user_in_session = data['id']
             except Exception:
-                return jsonify({'messgae': 'Token is invalid.'}), 401
+                return jsonify({'messgae': 'Invalid access token.'}), 400
 
             return f(user_in_session, *args, **kwargs)
         return make_response(jsonify({'message': 'The user is already logged out!'})), 409

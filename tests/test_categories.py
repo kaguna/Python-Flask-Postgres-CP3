@@ -84,7 +84,7 @@ class CategoriesTestCase(BaseTestCase):
         """
         res = self.client().put('/category/3', headers={'x-access-token': self.access_token},
                                    data=self.categories)
-        self.assertEqual(res.status_code, 401)
+        self.assertEqual(res.status_code, 404)
         self.assertIn('Category does not exist.', str(res.data))
 
     def test_update_with_empty_category_name(self):
@@ -111,7 +111,7 @@ class CategoriesTestCase(BaseTestCase):
         """
         res = self.client().delete('/category/3', headers={'x-access-token': self.access_token},
                                    data=self.categories)
-        self.assertEqual(res.status_code, 401)
+        self.assertEqual(res.status_code, 404)
         self.assertIn('Category does not exist.', str(res.data))
 
     # Test category retrieval
@@ -134,7 +134,7 @@ class CategoriesTestCase(BaseTestCase):
         """
         res = self.client().get('/category/4', headers={'x-access-token': self.access_token},
                                 data=self.categories)
-        self.assertEqual(res.status_code, 401)
+        self.assertEqual(res.status_code, 404)
         self.assertIn('Category does not exist.', str(res.data))
 
     def test_retrieve_specific_category(self):

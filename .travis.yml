@@ -14,6 +14,8 @@ install:
 services:
 # Service to store the data structures
   - postgres
+env:
+  -TEST_DATABASE_URL='postgresql://postgres:sembe@localhost:5432/test_db'
 
 before_script:
 # Scripts to create database for the app and for testing
@@ -22,7 +24,7 @@ before_script:
 
 script:
 #Scope of code for the coveralls to cover
-  - pytest --cov=app tests/
+  - pytest --cov=classes/
 
 after_success:
 # After Travis builds successfully test the coverage
