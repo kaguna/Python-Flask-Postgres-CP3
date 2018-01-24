@@ -38,9 +38,7 @@ class UserLoginAuthentication(MethodView):
           200:
             description: Login Successful
           400:
-            description: Invalid email
-          401:
-            description: Invalid access token
+            description: Invalid email, token
           404:
             description: User not registered!
           412:
@@ -51,7 +49,7 @@ class UserLoginAuthentication(MethodView):
         email_pattern = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
         user_email = str(request.data.get('email', '')).strip().lower()
         user_password = str(request.data.get('password', ''))
-        user_details = Users.query.filter_by(email=user_email, password=user_password).first()
+        user_details = Users.query.filter_by(email=user_email).first()
 
         if not user_email and not user_password:
             return make_response(jsonify({'message': 'Please fill all the fields'})), 400
@@ -65,6 +63,9 @@ class UserLoginAuthentication(MethodView):
         if not user_details:
             return make_response(jsonify({'message': 'User not registered!'})), 404
 
+        if user_password != user_details.password:
+            return make_response(jsonify({'message': 'Wrong email or password.'})), 400
+
         access_token = jwt.encode({'id': user_details.id, 'expiry_time': str(datetime.datetime.utcnow() +
                                                                      datetime.timedelta(minutes=30))},
                                   os.getenv('SECRET', '$#%^%$^%@@@@@56634@@@'))
@@ -74,7 +75,7 @@ class UserLoginAuthentication(MethodView):
                                           'message': 'Successful login'})), 200
         else:
 
-            return make_response(jsonify({'message': 'Invalid access token'})), 401
+            return make_response(jsonify({'message': 'Invalid access token'})), 400
 
 
 class UserLogoutAuthentication(MethodView):
@@ -93,7 +94,7 @@ class UserLogoutAuthentication(MethodView):
         responses:
           200:
             description: User logged out successfully
-          401:
+          400:
             description: Invalid access token
           409:
             description: The user is already logged out!
@@ -106,7 +107,7 @@ class UserLogoutAuthentication(MethodView):
 
             return make_response(jsonify({'message': 'User '+str(user_details.username) +
                                                      ' logged out successfully'})), 200
-        return make_response(jsonify({'message': 'Invalid access token'})), 401
+        return make_response(jsonify({'message': 'Invalid access token'})), 400
 
 
 # Link the class and operation to a variable.

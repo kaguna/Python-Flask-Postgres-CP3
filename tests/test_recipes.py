@@ -11,9 +11,11 @@ class RecipesTestCase(BaseTestCase):
         self.client().post('/auth/register', data=self.register_user)
         login_details = self.client().post('/auth/login', data=self.login_user)
         self.access_token = json.loads(login_details.data.decode())['access_token']
-        self.client().post('/categories/', headers={'x-access-token': self.access_token}, data=self.categories)
-        self.response = self.client().post('/category/1/recipes/', headers={'x-access-token': self.access_token},
-                                      data=self.recipes)
+        self.client().post('/categories/', headers={'x-access-token': self.access_token},
+                           data=self.categories)
+        self.response = self.client().post('/category/1/recipes/',
+                                           headers={'x-access-token': self.access_token},
+                                           data=self.recipes)
 
     # Test recipe creation(POST)
 
@@ -77,8 +79,8 @@ class RecipesTestCase(BaseTestCase):
     def test_retrieve_specific_recipe_by_search(self):
         """Test retrieving a specific recipe by searching
         """
-        response = self.client().get('/category/1/recipes/?q=Ugali', headers={'x-access-token': self.access_token})
-        self.assertIn("Ugali", str(response.data))
+        response = self.client().get('/category/1/recipes/?q=ugali', headers={'x-access-token': self.access_token})
+        self.assertIn("ugali", str(response.data))
         self.assertEqual(response.status_code, 200)
 
     def test_retrieve_non_existing_recipe_by_search(self):
@@ -131,7 +133,7 @@ class RecipesTestCase(BaseTestCase):
         response = self.client().put('/category/5/recipe/1', headers={'x-access-token': self.access_token},
                                      data=self.recipes)
         self.assertEqual(response.status_code, 404)
-        self.assertIn('Recipe does not exist.', str(response.data))
+        self.assertIn('Category not found.', str(response.data))
 
     # Test deleting specific recipe(DELETE)
 

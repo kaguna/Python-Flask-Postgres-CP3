@@ -126,7 +126,7 @@ class SendResetPasswordToken(MethodView):
         user = Users.query.filter_by(email=user_email).first()
 
         if not user_email:
-            return make_response(jsonify({'message': 'Please fill all the fields'})), 400
+            return make_response(jsonify({'message': 'Please fill all the fields'})), 412
 
         if not re.search(CreateUser.email_pattern, user_email):
             return make_response(jsonify({'message': 'Invalid email given'})), 400

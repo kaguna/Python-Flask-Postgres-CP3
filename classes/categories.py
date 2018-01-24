@@ -181,7 +181,7 @@ class FilteredCategoryMethods(MethodView):
             response = jsonify(category_attributes)
             response.status_code = 200
             return category_attributes
-        return make_response(jsonify({'message': 'Category does not exist.'})), 401
+        return make_response(jsonify({'message': 'Category does not exist.'})), 404
 
     @classmethod
     def put(self, user_in_session, category_id):
@@ -224,7 +224,7 @@ class FilteredCategoryMethods(MethodView):
         # The retrieve_the_category stores the specific retrieved
         #   category for the user in session.
         if not retrieve_the_category:
-            return make_response(jsonify({'message': 'Category does not exist.'})), 401
+            return make_response(jsonify({'message': 'Category does not exist.'})), 404
 
         if not category_name:
             return make_response(jsonify({'message': 'Please fill all the fields'})), 400
@@ -267,7 +267,7 @@ class FilteredCategoryMethods(MethodView):
                                                                  id=category_id).first()
         if not retrieve_category_to_delete:
             # This checks whether the category whose id provided exists.
-            return make_response(jsonify({'message': 'Category does not exist.'})), 401
+            return make_response(jsonify({'message': 'Category does not exist.'})), 404
 
         retrieve_category_to_delete.delete()
         # If the category exists, it is deleted.
