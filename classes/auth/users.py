@@ -1,6 +1,7 @@
 # This file will create the user and reset the password.
 import datetime
 import re
+from passlib.apps import custom_app_context as password_context
 
 import jwt
 import os
@@ -85,8 +86,8 @@ class CreateUser(MethodView):
 
         if user:
             return make_response(jsonify({'message': 'User exists!'})), 409
-
-        user_creation = Users(email=user_email, username=user_name, password=user_password)
+        user_hashed_password = password_context.encrypt(user_password)
+        user_creation = Users(email=user_email, username=user_name, password=user_hashed_password)
         user_creation.save()
         return make_response(jsonify({'message': 'User registered successfully'})), 201
 
@@ -214,8 +215,8 @@ class ResetPassword(MethodView):
 
         if user.id != user_in_session:
             return make_response(jsonify({'message': 'Unauthorized access!'})), 400
-
-        user.password = user_password
+        user_hashed_password = password_context.encrypt(user_password)
+        user.password = user_hashed_password
         user.save()
         return make_response(jsonify({'message': 'Password resetting is successful'})), 201
 

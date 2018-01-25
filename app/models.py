@@ -12,7 +12,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True)
     username = db.Column(db.String(100))
-    password = db.Column(db.String(80))
+    password = db.Column(db.String(1024))
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(),
                            onupdate=db.func.current_timestamp())
