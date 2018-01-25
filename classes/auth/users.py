@@ -215,7 +215,7 @@ class ResetPassword(MethodView):
 
         if user.id != user_in_session:
             return make_response(jsonify({'message': 'Unauthorized access!'})), 400
-        user_hashed_password = bcrypt.generate_password_hash(user_password, 10)
+        user_hashed_password = password_context.encrypt(user_password)
         user.password = user_hashed_password
         user.save()
         return make_response(jsonify({'message': 'Password resetting is successful'})), 201
