@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/kaguna/Flask-API.svg?branch=ft-Test-all-recipe-methods-153892177)](https://travis-ci.org/kaguna/Flask-API)
-[![Coverage Status](https://coveralls.io/repos/github/kaguna/Flask-API/badge.svg?branch=ft-Document-recipes-endpoints-154020821)](https://coveralls.io/github/kaguna/Flask-API?branch=ft-Document-recipes-endpoints-154020821)
+[![Coverage Status](https://coveralls.io/repos/github/kaguna/Flask-API/badge.svg?branch=develop)](https://coveralls.io/github/kaguna/Flask-API?branch=develop)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/90c04d83952843fbaefc4fc9fb13d837)](https://www.codacy.com/app/kaguna/Flask-API?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kaguna/Flask-API&amp;utm_campaign=Badge_Grade)
 # Flask-API
 ## Introduction
 The Yummy-Recipes flask Api is a token based application that provides the user with the registration fields for 
@@ -121,4 +122,6 @@ transfer the folder to the working directory.
 |    PUT category/<category_id>/recipe/<recipe_id>   | PUT           | Edit a recipe name                            |  FALSE        |
 |    DELETE category/<category_id>/recipe/<recipe_id>| DELETE        | Delete a recipe                               |  FALSE        |
 
+### Test the API here.
 
+[Yummy Recipes API](https://recipe-yummy-api.herokuapp.com/)
