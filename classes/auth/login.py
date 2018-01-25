@@ -8,7 +8,7 @@ import jwt
 import datetime
 from app.models import BlacklistToken
 from classes.auth.auth import token_required
-
+from passlib.apps import custom_app_context as password_context
 
 class UserLoginAuthentication(MethodView):
     """This class will handle the access of resources by user through login.
@@ -63,7 +63,7 @@ class UserLoginAuthentication(MethodView):
         if not user_details:
             return make_response(jsonify({'message': 'User not registered!'})), 404
 
-        if user_password != user_details.password:
+        if not password_context.verify(user_password, user_details.password):
             return make_response(jsonify({'message': 'Wrong email or password.'})), 400
 
         access_token = jwt.encode({'id': user_details.id, 'expiry_time': str(datetime.datetime.utcnow() +
