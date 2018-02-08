@@ -1,4 +1,3 @@
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6ff3a32c90e04312b28de6b4b7393057)](https://www.codacy.com/app/kaguna/Flask-API?utm_source=github.com&utm_medium=referral&utm_content=kaguna/Flask-API&utm_campaign=badger)
 [![Build Status](https://travis-ci.org/kaguna/Flask-API.svg?branch=ft-Test-all-recipe-methods-153892177)](https://travis-ci.org/kaguna/Flask-API)
 [![Coverage Status](https://coveralls.io/repos/github/kaguna/Flask-API/badge.svg?branch=ft-Document-recipes-endpoints-154020821)](https://coveralls.io/github/kaguna/Flask-API?branch=ft-Document-recipes-endpoints-154020821)
 # Flask-API
