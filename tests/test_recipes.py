@@ -140,8 +140,13 @@ class RecipesTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 409)
         self.assertIn('Recipe exists!', str(response.data))
 
+<<<<<<< Updated upstream
     def test_editing_with_non_existing_recipe(self):
         """Test if the the recipe editing will be successful when recipe does not exist.
+=======
+    def test_update_recipe_name_within_different_category(self):
+        """----------.
+>>>>>>> Stashed changes
         """
         self.client.post('/category/1/recipes/', headers={'x-access-token': self.access_token},
                          data=self.recipes)
