@@ -146,6 +146,9 @@ class RecipesTestCase(unittest.TestCase):
 =======
     def test_update_recipe_name_within_different_category(self):
         """----------.
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         """
         self.client.post('/category/1/recipes/', headers={'x-access-token': self.access_token},
