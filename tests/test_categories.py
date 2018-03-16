@@ -126,7 +126,7 @@ class CategoriesTestCase(BaseTestCase):
         """Test retrieving a non existing category by searching
         """
         response = self.client().get('/categories/?q=Breako', headers={'x-access-token': self.access_token})
-        self.assertIn("Category does not exist.", str(response.data))
+        self.assertIn("no_category_on_search", str(response.data))
         self.assertEqual(response.status_code, 401)
 
     def test_retrieve_non_existing_category(self):

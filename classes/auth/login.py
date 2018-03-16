@@ -72,7 +72,9 @@ class UserLoginAuthentication(MethodView):
 
         if access_token:
             return make_response(jsonify({'access_token': access_token.decode(),
-                                          'message': 'Successful login'})), 200
+                                          'message': 'Successful login',
+                                          'username': user_details.username,
+                                          'email': user_details.email})), 200
         else:
 
             return make_response(jsonify({'message': 'Invalid access token'})), 400

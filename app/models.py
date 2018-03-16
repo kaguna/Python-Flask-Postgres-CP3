@@ -1,6 +1,7 @@
 # creates the user, categories and recipes tables schema
 
 from app import db
+import datetime
 
 # import the db connection from the app/__init__.py
 
@@ -47,9 +48,9 @@ class Categories(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     category_name = db.Column(db.String(100))
     users_id = db.Column(db.Integer, db.ForeignKey(Users.id), nullable=False)
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(),
-                           onupdate=db.func.current_timestamp())
+    created_at = db.Column(db.DateTime, default=datetime.datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.now,
+                           onupdate=datetime.datetime.now)
     recipes = db.relationship('Recipes', order_by='Recipes.id', cascade="all, delete-orphan")
 
     def __init__(self, category_name, users_id):
@@ -75,7 +76,7 @@ class Categories(db.Model):
 
     @staticmethod
     def get_all(owner_id):
-        return Categories.query.filter_by(users_id=owner_id)
+        return Categories.query.filter_by(users_id=owner_id).order_by("id desc")
 
     def __repr__(self):
         return "<Categories: {}>".format(self.category_name)
@@ -91,9 +92,9 @@ class Recipes(db.Model):
     recipe_description = db.Column(db.String(1024))
     category_id = db.Column(db.Integer, db.ForeignKey(Categories.id), nullable=False)
     users_id = db.Column(db.Integer, db.ForeignKey(Users.id), nullable=False)
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(),
-                           onupdate=db.func.current_timestamp())
+    created_at = db.Column(db.DateTime, default=datetime.datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.now,
+                           onupdate=datetime.datetime.now)
 
     def __init__(self, recipe_name, recipe_description, category_id, users_id):
         """initialize with recipe details."""
@@ -120,7 +121,7 @@ class Recipes(db.Model):
 
     @staticmethod
     def get_all(category, user):
-        return Recipes.query.filter_by(category_id=category, users_id=user)
+        return Recipes.query.filter_by(category_id=category, users_id=user).order_by("id desc")
 
     def __repr__(self):
         return "<Recipes: {}>".format(self.recipe_name)
