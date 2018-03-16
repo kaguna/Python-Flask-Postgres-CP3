@@ -15,7 +15,7 @@ def token_required(f):
         check_token = BlacklistToken.query.filter_by(token=access_token).first()
 
         if not access_token:
-            return jsonify({'messgae': 'Token is missing.'}), 401
+            return jsonify({'message': 'Token is missing.'}), 401
 
         if not check_token:
             try:

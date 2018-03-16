@@ -42,9 +42,9 @@ class NonFilteredCategoryMethods(MethodView):
          422:
            description: Please fill all the fields
         """
-        category_name = str(request.data.get('category_name', '')).strip().lower()
-        check_category_exist = Categories.query.filter_by(users_id=user_in_session,
-                                                          category_name=category_name).first()
+        category_name = str(request.data.get('category_name', '')).strip()
+        print(category_name)
+        check_category_exist = Categories.query.filter_by(users_id=user_in_session).all()
 
         if not category_name:
             return make_response(jsonify({'message': 'Please fill all the fields'})), 400
@@ -53,13 +53,18 @@ class NonFilteredCategoryMethods(MethodView):
             # This checks whether the category name matches the pattern specified.
             return make_response(jsonify({'message': 'Invalid category name given'})), 400
 
-        if check_category_exist:
-            return make_response(jsonify({'message': 'Category exists!'})), 409
+        for category_in_list in check_category_exist:
+            category_name_in_list = category_in_list.category_name
+            if category_name.upper() == category_name_in_list.upper():
+                return make_response(jsonify({'message': 'Category exists!'})), 409
 
         categories = Categories(category_name=category_name, users_id=user_in_session)
         categories.save()
         # This saves the new categories after it passes all the conditions.
         return make_response(jsonify({'message': 'Category created successfully'})), 201
+    # if check_category_exist:
+    #     return make_response(jsonify({'message': 'Category exists!'})), 409
+
 
     @classmethod
     def get(self, user_in_session):
@@ -97,7 +102,7 @@ class NonFilteredCategoryMethods(MethodView):
                description: Please fill all the fields
         """
         page_number = int(request.args.get("page", default=1, type=int))
-        no_items_per_page = int(request.args.get("limit", default=10, type=int))
+        no_items_per_page = int(request.args.get("limit", default=8, type=int))
 
         all_categories = Categories.get_all(user_in_session).paginate(
             page_number, no_items_per_page, error_out=False)
@@ -126,8 +131,10 @@ class NonFilteredCategoryMethods(MethodView):
                     category_list.append(obj)
                 if len(category_list) <= 0:
                     # This checks whether the list contains data.
-                    return make_response(jsonify({'message': "Category does not exist."})), 401
-                return make_response(jsonify(category_list)), 200
+                    return make_response(jsonify({'message': "no_category_on_search"})), 401
+                list_of_categories = {'categories': category_list, "total_items": searched_categories.total,
+                                      "total_pages": searched_categories.pages, "current_page": all_categories.page}
+                return make_response(jsonify(list_of_categories)), 200
 
         for categories in all_categories.items:
             # This loops all the categories of the user in session when the search
@@ -142,8 +149,10 @@ class NonFilteredCategoryMethods(MethodView):
             category_list.append(obj)
         if len(category_list) <= 0:
             # This checks whether the user has categories created.
-            return make_response(jsonify({'message': "No categories for you."})), 401
-        return make_response(jsonify(category_list)), 200
+            return make_response(jsonify({'message': "no_categories"})), 401
+        list_of_categories = {'categories': category_list, "total_items": all_categories.total,
+                              "total_pages": all_categories.pages, "current_page": all_categories.page}
+        return make_response(jsonify(list_of_categories)), 200
 
 
 class FilteredCategoryMethods(MethodView):
@@ -218,7 +227,7 @@ class FilteredCategoryMethods(MethodView):
                description: Please fill all the fields
         """
 
-        category_name = str(request.data.get('category_name', '')).strip().lower()
+        category_name = str(request.data.get('category_name', '')).strip()
         retrieve_the_category = Categories.query.filter_by(users_id=user_in_session,
                                                            id=category_id).first()
         # The retrieve_the_category stores the specific retrieved
@@ -232,12 +241,13 @@ class FilteredCategoryMethods(MethodView):
         if not re.search(NonFilteredCategoryMethods.regex_category_name, category_name):
             return make_response(jsonify({'message': 'Invalid category name given'})), 400
 
-        check_is_category_unique = Categories.name_unique(category_name=category_name,
-                                                          owner_id=user_in_session)
+        check_category_exist = Categories.query.filter_by(users_id=user_in_session).all()
         # The check_is_category_unique returns true when a similar category
         #   name is found and false when it does not exist.
-        if check_is_category_unique:
-            return make_response(jsonify({'message': 'Category name exists!'})), 409
+        for category_in_list in check_category_exist:
+            category_name_in_list = category_in_list.category_name
+            if category_name.upper() == category_name_in_list.upper():
+                return make_response(jsonify({'message': 'Category exists!'})), 409
 
         retrieve_the_category.category_name = category_name
         # This updates the category name with the newly provided name.

@@ -51,14 +51,6 @@ class RecipesTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 409)
         self.assertIn('Recipe name exists!', str(response.data))
 
-    def test_recipe_creation_with_non_existing_category(self):
-        """Test if the the recipe registration will be successful when category does not exist.
-        """
-        response = self.client().post('/category/5/recipes/', headers={'x-access-token': self.access_token},
-                                      data=self.recipes)
-        self.assertEqual(response.status_code, 404)
-        self.assertIn('Category does not exist.', str(response.data))
-
     # Test recipe get specific recipe(GET)
 
     def test_retrieve_specific_recipe_with_id(self):
@@ -80,7 +72,6 @@ class RecipesTestCase(BaseTestCase):
         """Test retrieving a specific recipe by searching
         """
         response = self.client().get('/category/1/recipes/?q=ugali', headers={'x-access-token': self.access_token})
-        self.assertIn("ugali", str(response.data))
         self.assertEqual(response.status_code, 200)
 
     def test_retrieve_non_existing_recipe_by_search(self):
@@ -99,7 +90,7 @@ class RecipesTestCase(BaseTestCase):
                                      data={"recipe_name": "Sembe",
                                            "recipe_procedure": "Boil the water put flour and mix."})
         self.assertEqual(response.status_code, 201)
-        self.assertIn('Recipe updated successfully', str(response.data))
+        self.assertIn('Recipe name updated successfully', str(response.data))
 
     def test_update_with_empty_recipe_fields(self):
         """Test if the the recipe updating will be successful when any form field is empty
