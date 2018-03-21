@@ -153,6 +153,7 @@ class NonFilteredRecipesManipulations(MethodView):
                 list_of_recipes = {'recipes': recipe_list, "total_items": search_recipes.total,
                                       "total_pages": search_recipes.pages, "current_page": search_recipes.page}
                 return make_response(jsonify(list_of_recipes)), 200
+
             else:
                 for recipes in category_recipes.items:
                     # This loops all the recipes of the category with no search parameters.
@@ -162,7 +163,8 @@ class NonFilteredRecipesManipulations(MethodView):
                         'recipe_description': recipes.recipe_description,
                         'category_id': recipes.category_id,
                         'date_created': recipes.created_at,
-                        'date_updated': recipes.updated_at
+                        'date_updated': recipes.updated_at,
+                        'category_name': check_category_exists.category_name
                         }
                     recipe_list.append(all_recipes)
                 if len(recipe_list) <= 0:

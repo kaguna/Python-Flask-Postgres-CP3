@@ -9,7 +9,6 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET = os.getenv('SECRET')
 
-
 class DevelopmentConfig(Config):
     """Configurations for Development."""
     DEBUG = True
