@@ -1,0 +1,31 @@
+# file to track the tests and their coverage level
+language:
+# language used
+  - python
+
+python:
+# The version being supported
+  - 3.6
+
+install:
+# Initial requirements that need to be installed before running the app
+  - pip install -r requirements.txt
+
+services:
+# Service to store the data structures
+  - postgres
+env:
+  -TEST_DATABASE_URL='postgresql://postgres:sembe@localhost:5432/test_db'
+
+before_script:
+# Scripts to create database for the app and for testing
+  - psql -c 'CREATE DATABASE flask_api;' -U postgres
+  - psql -c 'CREATE DATABASE test_db;' -U postgres
+
+script:
+#Scope of code for the coveralls to cover
+  - pytest --cov=classes/
+
+after_success:
+# After Travis builds successfully test the coverage
+  - coveralls

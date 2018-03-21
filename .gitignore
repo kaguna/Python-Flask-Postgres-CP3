@@ -1,0 +1,12 @@
+venv
+.idea
+app/__pycache__
+__init__.pyc
+instance/__pycache__
+migrations
+.cache
+classes/__pycache__/
+tests/__pycache__/
+.coverage
+.Ds_Store
+__pycache__/
