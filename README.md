@@ -121,4 +121,4 @@ transfer the folder to the working directory.
 |    PUT category/<category_id>/recipe/<recipe_id>   | PUT           | Edit a recipe name                            |  FALSE        |
 |    DELETE category/<category_id>/recipe/<recipe_id>| DELETE        | Delete a recipe                               |  FALSE        |
 ## Test the API
-Test the API online  [here](https://recipes-yummy-api.herokuapp.com)
+Test the API online [here](https://recipes-yummy-api.herokuapp.com). It uses swagger for documentation.
