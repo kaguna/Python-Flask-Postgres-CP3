@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/kaguna/Flask-API.svg?branch=ft-Test-all-recipe-methods-153892177)](https://travis-ci.org/kaguna/Flask-API)
-[![Coverage Status](https://coveralls.io/repos/github/kaguna/Flask-API/badge.svg?branch=ft-Document-recipes-endpoints-154020821)](https://coveralls.io/github/kaguna/Flask-API?branch=ft-Document-recipes-endpoints-154020821)
+[![Build Status](https://travis-ci.org/kaguna/CP3-yummy-recipes.svg?branch=master)](https://travis-ci.org/kaguna/CP3-yummy-recipes)
+[![Coverage Status](https://coveralls.io/repos/github/kaguna/CP3-yummy-recipes/badge.svg?branch=master)](https://coveralls.io/github/kaguna/CP3-yummy-recipes?branch=master)
 # Flask-API
 ## Introduction
 The Yummy-Recipes flask Api is a token based application that provides the user with the registration fields for 
