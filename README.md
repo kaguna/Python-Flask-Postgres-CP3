@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/kaguna/CP3-yummy-recipes.svg?branch=master)](https://travis-ci.org/kaguna/CP3-yummy-recipes)
 [![Coverage Status](https://coveralls.io/repos/github/kaguna/CP3-yummy-recipes/badge.svg?branch=master)](https://coveralls.io/github/kaguna/CP3-yummy-recipes?branch=master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ac9e981548a242ef86a979a972ce6d83)](https://www.codacy.com/app/kaguna/CP3-yummy-recipes?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kaguna/CP3-yummy-recipes&amp;utm_campaign=Badge_Grade)
 # Flask-API
 ## Introduction
 The Yummy-Recipes flask Api is a token based application that provides the user with the registration fields for 
